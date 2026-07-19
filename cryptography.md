@@ -2,6 +2,23 @@
 
 Because the network operates over a decentralized, multi-hop mesh on a public ISM band (865-867 MHz), every transmission must be encrypted and authenticated. Layer 4 sits between the TinyML Inference (Layer 3) and Mesh Routing (Layer 5). 
 
+## Modular Interface Enforcement
+To guarantee strict modularity, Layer 4 must adhere to the following interface:
+*   **Allowed Instructions:** Hardware AES acceleration calls, SHA256 hashing, Nonce management.
+*   **Forbidden Instructions:** LoRa SPI calls, Distance-Vector routing logic, sensor math.
+*   **Layer 4 Input:** Pops `AlertEvent` from Queue 3 (from TinyML) OR pops `RpcCommand` (from Master).
+*   **Layer 4 Output:** Pushes `CiphertextPacket` to Layer 5 via Queue 4.
+
+```cpp
+// Explicit Output Interface to Layer 5
+struct CiphertextPacket {
+    uint8_t encrypted_payload[16];
+    uint8_t hmac_signature[32];
+    uint32_t rolling_nonce;
+};
+// Sent via: xQueueSend(Queue_L4_to_L5, &cipher, portMAX_DELAY);
+```
+
 ## 1. Cryptographic Suite
 The node utilizes the ESP32-S3's built-in hardware cryptographic accelerators to ensure security without draining the battery via heavy CPU calculations.
 *   **Encryption:** `AES-128-CTR` (Advanced Encryption Standard in Counter Mode).

@@ -55,27 +55,66 @@ graph TD
 
 ---
 
-## 3. Data Flow & Compute Pipeline (The 7 Layers)
+## 3. Strict Software Modularization (The 7 Layers)
 
-To prevent the ESP32-S3 from suffering "event blockage," the architecture utilizes FreeRTOS dual-core task pinning.
+To guarantee system stability, the firmware operates on a **Strictly Decoupled Modular Architecture**. Layers never call each other's functions directly. They act as independent state machines communicating exclusively via thread-safe **FreeRTOS Queues**. This means Layer 2 has absolutely no I2C code, and Layer 5 has no knowledge of how TinyML works.
 
 ```mermaid
-flowchart LR
-    subgraph core1 [Core 1: Application & Intel]
-        S[Sensors] -->|I2C/GPIO| L1(Layer 1: HAL)
-        L1 -->|Queue| L2(Layer 2: Preprocess)
-        L2 -->|1D Tensor| L3(Layer 3: TinyML)
-    end
-
-    subgraph core0 [Core 0: Protocol & Mesh]
-        L3 -->|Alert Event Queue| L4(Layer 4: Crypto)
-        L4 -->|AES-128-CTR + HMAC| L5(Layer 5: Mesh Routing)
-        L5 -->|SPI DMA| L6(Layer 6: LoRa PHY)
-    end
+classDiagram
+    class Layer0_Power {
+        <<Global HW State>>
+        +Wake CPU
+        +Trigger Brownout
+    }
+    class Layer1_HAL {
+        <<Input: I2C/GPIO Signals>>
+        +Poll_BME680()
+        +Count_Interrupts()
+        <<Output: SensorDataStruct Queue>>
+    }
+    class Layer2_Preprocess {
+        <<Input: SensorDataStruct Queue>>
+        +Apply_Standard_Scaling()
+        +Calculate_Deltas()
+        <<Output: 1D Tensor Queue>>
+    }
+    class Layer3_TinyML {
+        <<Input: 1D Tensor Queue>>
+        +Run_XGBoost_Tree()
+        <<Output: AlertEvent Queue>>
+    }
+    class Layer4_Crypto {
+        <<Input: AlertEvent Queue>>
+        +AES_CTR_Encrypt()
+        +HMAC_SHA256_Sign()
+        <<Output: Ciphertext Queue>>
+    }
+    class Layer5_Routing {
+        <<Input: Ciphertext Queue>>
+        +Check_Distance_Vector()
+        +Format_SPIN_Header()
+        <<Output: LoRa TX Buffer Queue>>
+    }
+    class Layer6_LoRaPHY {
+        <<Input: LoRa TX Buffer Queue>>
+        +Trigger_SPI_DMA()
+    }
     
-    L6 -->|RF Transmission| Radio((Antenna))
+    Layer0_Power --> Layer1_HAL : HW Wake Trigger
+    Layer1_HAL --> Layer2_Preprocess : push(Queue 1)
+    Layer2_Preprocess --> Layer3_TinyML : push(Queue 2)
+    Layer3_TinyML --> Layer4_Crypto : push(Queue 3)
+    Layer4_Crypto --> Layer5_Routing : push(Queue 4)
+    Layer5_Routing --> Layer6_LoRaPHY : push(Queue 5)
 ```
-**Layer 6 (LoRa PHY):** SX1262 module utilizing **Adaptive Data Rate (ADR)**. The network dynamically shifts between SF7 (prioritizing high bandwidth and short time-on-air for dense mesh areas) and SF10/SF11 (prioritizing ultra-long range for sparse, distant nodes).
+
+### The Modular Rules of Engagement
+*   **Layer 1 (HAL):** *Rule:* Completely blind to the network. It solely reads registers and dumps raw `SensorDataStructs` into Queue 1.
+*   **Layer 2 (Preprocessing):** *Rule:* Hardware-agnostic. It pops from Queue 1, normalizes the data, and pushes a pure math `float array` (1D Tensor) to Queue 2.
+*   **Layer 3 (TinyML Engine):** *Rule:* Only does math. Pops from Queue 2, runs the decision tree, and pushes an 8-bit anomaly index to Queue 3.
+*   **Layer 4 (Cryptography):** *Rule:* Black-box encryption. Pops the index, encrypts it with the rolling nonce, and pushes the ciphertext to Queue 4.
+*   **Layer 5 (Mesh Routing):** *Rule:* Has no idea what the payload means. It wraps the ciphertext in a Distance-Vector header and pushes to Queue 5.
+*   **Layer 6 (LoRa PHY):** *Rule:* Simply shifts bytes from Queue 5 out over the SPI bus via DMA using Adaptive Data Rate (ADR).
 
 ---
 

@@ -2,6 +2,23 @@
 
 This document covers the multi-hop routing strategy, how new nodes dynamically join the mesh, and how the network strictly manages LoRa bandwidth.
 
+## Modular Interface Enforcement
+To guarantee strict modularity, Layer 5 & 6 must adhere to the following interface:
+*   **Allowed Instructions:** Distance-Vector table lookups, SPIN header formatting, SPI DMA triggering (Layer 6).
+*   **Forbidden Instructions:** Decrypting payloads, executing RPC commands, reading sensors.
+*   **Layer 5 Input:** Pops `CiphertextPacket` from Queue 4.
+*   **Layer 6 Output:** Pushes raw byte arrays to the SX1262 LoRa module via SPI.
+
+```cpp
+// Explicit Output Interface to Layer 6
+struct LoRaTxBuffer {
+    uint8_t target_mac[6];
+    uint8_t hop_count;
+    CiphertextPacket payload;
+};
+// Sent via: xQueueSend(Queue_L5_to_L6, &tx_buffer, portMAX_DELAY);
+```
+
 ## 1. Mesh Routing Topology (Distance-Vector vs. Reactive)
 Standard LoRaWAN uses a centralized Star topology requiring a gateway. For a decentralized, macro-regional WSN, we use **Ad-Hoc Peer-to-Peer Mesh Routing**.
 

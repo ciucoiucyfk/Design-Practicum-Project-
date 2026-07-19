@@ -2,6 +2,22 @@
 
 The TinyML engine is the brain of the node, turning raw sensor telemetry into actionable, highly compressed classifications. Instead of sending 20 bytes of floating-point sensor data over LoRa, we send a 1-byte "classification index" and confidence score.
 
+## Modular Interface Enforcement
+To guarantee strict modularity, Layer 2 & 3 must adhere to the following interface:
+*   **Allowed Instructions:** Floating-point math, array manipulation, decision tree execution.
+*   **Forbidden Instructions:** I2C/SPI hardware calls, LoRa transmission, AES encryption.
+*   **Layer 2 Input:** Pops `SensorDataStruct` from Queue 1.
+*   **Layer 3 Output:** Pushes an 8-bit `AlertEvent` to Layer 4 via Queue 3.
+
+```cpp
+// Explicit Output Interface to Layer 4
+struct AlertEvent {
+    uint8_t anomaly_index; // 0 = Normal, 1 = Rain, 2 = Severe Storm
+    uint8_t confidence;    // 0-100%
+};
+// Sent via: xQueueSend(Queue_L3_to_L4, &alert, portMAX_DELAY);
+```
+
 ## 1. Preprocessing (Layer 2 to Layer 3 Handoff)
 Before inference, Layer 2 must format the raw HAL data into a **1D Tensor** (an array of floats).
 *   **Scaling:** ML models require normalized inputs. The ESP32 must apply the exact same `StandardScaler` or `MinMaxScaler` logic applied during Python training.
