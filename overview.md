@@ -167,7 +167,40 @@ enum RpcCommand {
 
 ---
 
-## 7. Bill of Materials (BOM) & Pricing (INR)
+## 7. Engineering Design Standards
+
+To ensure macro-regional survivability (high vibration, extreme heat, monsoon humidity), all nodes must adhere to the following physical hardware standards:
+
+### A. Cabling & Wire Gauge
+*   **Power Subsystem (Solar/Battery to MPPT/ESP32):** Use **22 AWG Silicone Stranded Wire**. Silicone insulation resists melting outdoors and remains highly flexible.
+*   **Signal & Sensor Lines (I2C, SPI, UART, GPIO):** Use **26 AWG Silicone Stranded Wire** to reduce bulk and capacitance.
+
+### B. Connectors
+*   **Board-to-Wire (Sensors):** Direct soldering is forbidden. All sensors must connect to the main PCB using **JST-XH (2.54mm pitch) latched connectors** to prevent disconnects due to wind vibration.
+*   **High-Current Power (Battery):** Use **XT30 connectors** between the 18650 battery array and the PCB for reliable, high-amp connections that can be easily unplugged for maintenance.
+*   **RF/Antenna:** The SX1262 connects to the external antenna using a shielded **IPEX/U.FL to SMA-Female Bulkhead** pigtail. The SMA connector mounts through the enclosure wall, sealed with an O-ring.
+
+### C. Fasteners & Mechanical
+*   **Screws:** All PCBs and 3D printed parts must be mounted using **M2.5 and M3 Stainless Steel (SS304/SS316) Socket Cap Screws**. Zinc-plated screws will rust and fail.
+*   **Threaded Inserts:** Screwing directly into 3D-printed plastic is forbidden. Use **M3 Brass Heat-Set Threaded Inserts** melted into the PETG/ASA mounts.
+*   **PCB Standoffs:** Use Nylon hex standoffs to prevent electrical shorts.
+
+---
+
+## 8. Sensor Array Specifications
+
+Each node (both Master and Slave) contains the exact same micro-climate sensor array.
+
+*   **BME680 (Protocol: I2C):** A micro-heated MEMS sensor. It provides Temperature, Humidity, Barometric Pressure, and Volatile Organic Compounds (VOC) for Air Quality Indexing. Using I2C allows it to share pins with other sensors.
+*   **AS3935 (Protocol: I2C/SPI):** A specialized lightning sensor IC connected to a custom MA5532 antenna coil. It detects cloud-to-ground and cloud-to-cloud strikes up to 40km away, reporting distance and energy. We use I2C to share the bus with the BME680.
+*   **NEO-6M GPS (Protocol: UART):** Provides absolute geo-coordinates and highly precise UTC time. Communicates over standard RX/TX pins. It is heavily power-gated (switched off via MOSFET) after initial mesh registration.
+*   **Anemometer (Protocol: GPIO / PCNT):** Measures wind speed. Uses 3D-printed wind cups spinning a magnet over a Hall-Effect sensor or Rotary Encoder. This sends high-speed digital pulses to the ESP32's Pulse Counter (PCNT) hardware peripheral.
+*   **Pluviometer (Protocol: GPIO Interrupt):** Measures rain. A 3D-printed tipping bucket triggers a magnetic reed switch. The ESP32 reads this as a hardware interrupt (falling edge).
+*   **PIN Diode - BPW34 (Protocol: Analog / ADC):** Detects Beta/Gamma radiation. The tiny current from a particle strike is amplified by an LM358 Op-Amp into a voltage spike, which the ESP32 reads via an Analog-to-Digital (ADC) pin.
+
+---
+
+## 9. Bill of Materials (BOM) & Pricing (INR)
 
 *Note: Prices are estimated retail values in Indian Rupees (₹) for single-unit prototype quantities. Bulk manufacturing will significantly reduce costs. Sourcing links are representative examples.*
 
@@ -188,8 +221,10 @@ enum RpcCommand {
 | **Physical Build** | IP67 ABS Enclosure + Gore-Tex Vents | ₹ 800 | [Robu.in](https://robu.in/product/waterproof-plastic-electronic-project-box-enclosure/) |
 | | ASA/PETG Filament (UV/Temp Resistant) | ₹ 250 | [Robu.in](https://robu.in/product/flashforge-petg-1-75mm-3d-printer-filament-1kg-black/) |
 | | M3/M2.5 SS Screws & Brass Inserts | ₹ 150 | [Local Hardware](#) |
+| | 22/26 AWG Silicone Wire + JST-XH/XT30 Connectors | ₹ 300 | [Robu.in](https://robu.in/product/jst-xh-2-54mm-pitch-connector-kit/) |
+| | IPEX/U.FL to SMA Bulkhead Pigtail | ₹ 150 | [Robu.in](https://robu.in/product/ipex-to-sma-female-bulkhead-cable/) |
 | | Silicone Sealant & Desiccant Packets | ₹ 100 | [Local Hardware](#) |
-| **Total** | **Estimated Slave Node Cost** | **₹ 9,100** | |
+| **Total** | **Estimated Slave Node Cost** | **₹ 9,550** | |
 
 ### B. Master Node BOM (Web Gateway + Full Sensor Array)
 *The Master Node possesses the exact same micro-climate weather sensing capabilities as the Slave Nodes, but is upgraded with additional compute, high-gain RF, and storage.*
@@ -212,12 +247,14 @@ enum RpcCommand {
 | **Physical Build** | IP67 ABS/Metal Enclosure + Vents | ₹ 800 | [Robu.in](https://robu.in/product/waterproof-plastic-electronic-project-box-enclosure/) |
 | | ASA/PETG Filament (UV/Temp Resistant) | ₹ 250 | [Robu.in](https://robu.in/product/flashforge-petg-1-75mm-3d-printer-filament-1kg-black/) |
 | | M3/M2.5 SS Screws & Brass Inserts | ₹ 150 | [Local Hardware](#) |
+| | 22/26 AWG Silicone Wire + JST-XH/XT30 Connectors | ₹ 300 | [Robu.in](https://robu.in/product/jst-xh-2-54mm-pitch-connector-kit/) |
+| | IPEX/U.FL to SMA Bulkhead Pigtail | ₹ 150 | [Robu.in](https://robu.in/product/ipex-to-sma-female-bulkhead-cable/) |
 | | Silicone Sealant & Desiccant Packets | ₹ 100 | [Local Hardware](#) |
-| **Total** | **Estimated Master Node Cost** | **₹ 10,400** | |
+| **Total** | **Estimated Master Node Cost** | **₹ 10,850** | |
 
 ---
 
-## 8. Bandwidth Limitations & Physics Validation
+## 10. Bandwidth Limitations & Physics Validation
 
 ### A. LoRa Bandwidth (India 865-867 MHz)
 While Indian regulations for 865-867 MHz do **not** legally enforce a hard duty cycle percentage limit (unlike Europe's 1% rule), physical packet collisions (the Aloha problem) will destroy the network if left unchecked.
@@ -231,7 +268,7 @@ The "indefinite autonomy" claim is mathematically verified:
 
 ---
 
-## 9. Global Web Interface
+## 11. Global Web Interface
 Hosted directly off the Master Node's SD Card.
 *   **Mapbox/Leaflet Integration:** Renders a real-time World Map displaying Slave Node locations.
 *   **Spatial Heatmaps:** Visualizes interpolated temperatures and VOC concentrations calculated by the Master.
