@@ -128,44 +128,53 @@ enum RpcCommand {
 
 ---
 
-## 7. Bill of Materials (BOM) & Pricing
+## 7. Bill of Materials (BOM) & Pricing (INR)
 
-*Note: Prices are approximate USD for single-unit prototype quantities. Bulk manufacturing will reduce costs by 40-50%.*
+*Note: Prices are estimated retail values in Indian Rupees (₹) for single-unit prototype quantities. Bulk manufacturing will significantly reduce costs. Sourcing links are representative examples.*
 
 ### A. Slave Node BOM (Edge Gatherer)
-| Category | Component | Est. Price |
-| :--- | :--- | :--- |
-| **Compute & RF** | ESP32-S3 WROOM Module | $4.00 |
-| | SX1262 SPI Transceiver (865-867 MHz) | $6.00 |
-| | 868MHz 3dBi/5dBi Omnidirectional Dipole Antenna | $3.00 |
-| **Power System** | 10W Solar Panel + CN3791 MPPT IC | $15.00 |
-| | 10,000mAh 18650 Li-Ion Array (3 cells) | $12.00 |
-| | HT7333 LDO + IRLML2502 MOSFETs + Passives | $3.00 |
-| **Sensors** | BME680 (Temp/Hum/Press/VOC) | $10.00 |
-| | AS3935 + MA5532 Antenna (Lightning) | $15.00 |
-| | NEO-6M GPS (UART) | $5.00 |
-| | PIN Diode (BPW34) + LM358 OpAmp (Radiation) | $3.00 |
-| | Anemometer & Pluviometer hardware (Bearings/Reed) | $8.00 |
-| **Physical Build** | IP67 ABS Enclosure + Gore-Tex Vents | $10.00 |
-| | ASA/PETG Filament (UV/Temp Resistant, NO PLA) | $3.00 |
-| | M3/M2.5 Stainless Steel Screws & Brass Inserts | $2.00 |
-| | Marine-Grade Silicone Sealant & Desiccant Packets | $2.00 |
-| **Total** | **Estimated Slave Node Cost** | **$100.00** |
+| Category | Component | Est. Price (INR) | Source / Link |
+| :--- | :--- | :--- | :--- |
+| **Compute & RF** | ESP32-S3 WROOM Module | ₹ 650 | [Robu.in](https://robu.in/product/esp32-s3-wroom-1-n8r8-wi-fi-bluetooth-module/) |
+| | SX1262 SPI Transceiver (865-867 MHz) | ₹ 750 | [Robu.in](https://robu.in/product/ebyte-e22-900m22s-sx1262-915mhz-868mhz-smd-wireless-module/) |
+| | 868MHz 3dBi/5dBi Omni Dipole Antenna | ₹ 200 | [Robu.in](https://robu.in/product/868mhz-5dbi-gsm-antenna-with-sma-male-connector/) |
+| **Power System** | 10W Solar Panel + CN3791 MPPT IC | ₹ 1,200 | [Robu.in](https://robu.in/product/12v-10w-polycrystalline-solar-panel/) |
+| | 10,000mAh 18650 Li-Ion Array (3 cells) | ₹ 900 | [Robu.in](https://robu.in/product/samsung-3300mah-3-7v-18650-li-ion-battery/) |
+| | HT7333 LDO + IRLML2502 MOSFETs | ₹ 150 | [Robu.in](https://robu.in/product/ht7333-a-3-3v-low-power-ldo-voltage-regulator/) |
+| **Sensors** | BME680 (Temp/Hum/Press/VOC) | ₹ 950 | [Robu.in](https://robu.in/product/bme680-digital-temperature-humidity-pressure-sensor/) |
+| | AS3935 + MA5532 Antenna (Lightning) | ₹ 1,800 | [ElectronicsComp](https://www.electronicscomp.com) |
+| | NEO-6M GPS (UART) | ₹ 450 | [Robu.in](https://robu.in/product/ublox-neo-6m-gps-module/) |
+| | PIN Diode (BPW34) + LM358 OpAmp | ₹ 150 | [Robu.in](https://robu.in/product/bpw34-silicon-pin-photodiode/) |
+| | Anemometer & Pluviometer (Bearings/Reed) | ₹ 600 | [Local Hardware](#) |
+| **Physical Build** | IP67 ABS Enclosure + Gore-Tex Vents | ₹ 800 | [Robu.in](https://robu.in/product/waterproof-plastic-electronic-project-box-enclosure/) |
+| | ASA/PETG Filament (UV/Temp Resistant) | ₹ 250 | [Robu.in](https://robu.in/product/flashforge-petg-1-75mm-3d-printer-filament-1kg-black/) |
+| | M3/M2.5 SS Screws & Brass Inserts | ₹ 150 | [Local Hardware](#) |
+| | Silicone Sealant & Desiccant Packets | ₹ 100 | [Local Hardware](#) |
+| **Total** | **Estimated Slave Node Cost** | **₹ 9,100** | |
 
-### B. Master Node BOM (Web Gateway)
-| Category | Component | Est. Price |
-| :--- | :--- | :--- |
-| **Compute & RF** | ESP32-S3 WROOM (**8MB PSRAM / 16MB Flash**) | $5.00 |
-| | SX1262 SPI Transceiver (865-867 MHz) | $6.00 |
-| | 868MHz 8dBi/10dBi High-Gain Fiberglass Antenna | $10.00 |
-| **Power System** | 10W Solar Panel + CN3791 MPPT IC | $15.00 |
-| | 10,000mAh 18650 Li-Ion Array (3 cells) | $12.00 |
-| | HT7333 LDO + IRLML2502 MOSFETs + Passives | $3.00 |
-| **Storage/Timing** | MicroSD Card Module (SDIO) + 32GB High-Endurance SD | $10.00 |
-| | DS3231 Precision RTC (I2C) + CR2032 Battery | $3.00 |
-| **Physical Build** | IP67 ABS/Metal Enclosure | $12.00 |
-| | ASA/PETG Filament, Stainless Screws, Sealant | $5.00 |
-| **Total** | **Estimated Master Node Cost** | **$77.00** |
+### B. Master Node BOM (Web Gateway + Full Sensor Array)
+*The Master Node possesses the exact same micro-climate weather sensing capabilities as the Slave Nodes, but is upgraded with additional compute, high-gain RF, and storage.*
+
+| Category | Component | Est. Price (INR) | Source / Link |
+| :--- | :--- | :--- | :--- |
+| **Compute & RF** | ESP32-S3 WROOM (**8MB PSRAM / 16MB Flash**) | ₹ 700 | [Robu.in](https://robu.in/product/esp32-s3-wroom-1-n16r8-module/) |
+| | SX1262 SPI Transceiver (865-867 MHz) | ₹ 750 | [Robu.in](https://robu.in/product/ebyte-e22-900m22s-sx1262-915mhz-868mhz-smd-wireless-module/) |
+| | 868MHz 8dBi/10dBi High-Gain Fiber Antenna | ₹ 800 | [Robu.in](https://robu.in/product/868mhz-8dbi-fiberglass-antenna/) |
+| **Power System** | 10W Solar Panel + CN3791 MPPT IC | ₹ 1,200 | [Robu.in](https://robu.in/product/12v-10w-polycrystalline-solar-panel/) |
+| | 10,000mAh 18650 Li-Ion Array (3 cells) | ₹ 900 | [Robu.in](https://robu.in/product/samsung-3300mah-3-7v-18650-li-ion-battery/) |
+| | HT7333 LDO + IRLML2502 MOSFETs | ₹ 150 | [Robu.in](https://robu.in/product/ht7333-a-3-3v-low-power-ldo-voltage-regulator/) |
+| **Sensors** | BME680 (Temp/Hum/Press/VOC) | ₹ 950 | [Robu.in](https://robu.in/product/bme680-digital-temperature-humidity-pressure-sensor/) |
+| | AS3935 + MA5532 Antenna (Lightning) | ₹ 1,800 | [ElectronicsComp](https://www.electronicscomp.com) |
+| | NEO-6M GPS (UART) | ₹ 450 | [Robu.in](https://robu.in/product/ublox-neo-6m-gps-module/) |
+| | PIN Diode (BPW34) + LM358 OpAmp | ₹ 150 | [Robu.in](https://robu.in/product/bpw34-silicon-pin-photodiode/) |
+| | Anemometer & Pluviometer (Bearings/Reed) | ₹ 600 | [Local Hardware](#) |
+| **Storage/Timing** | MicroSD Card Module (SDIO) + 32GB SD | ₹ 500 | [Robu.in](https://robu.in/product/micro-sd-tf-card-memory-shield-module-spi/) |
+| | DS3231 Precision RTC (I2C) + CR2032 | ₹ 150 | [Robu.in](https://robu.in/product/ds3231-rtc-module/) |
+| **Physical Build** | IP67 ABS/Metal Enclosure + Vents | ₹ 800 | [Robu.in](https://robu.in/product/waterproof-plastic-electronic-project-box-enclosure/) |
+| | ASA/PETG Filament (UV/Temp Resistant) | ₹ 250 | [Robu.in](https://robu.in/product/flashforge-petg-1-75mm-3d-printer-filament-1kg-black/) |
+| | M3/M2.5 SS Screws & Brass Inserts | ₹ 150 | [Local Hardware](#) |
+| | Silicone Sealant & Desiccant Packets | ₹ 100 | [Local Hardware](#) |
+| **Total** | **Estimated Master Node Cost** | **₹ 10,400** | |
 
 ---
 
