@@ -17,7 +17,7 @@ Standard LoRaWAN uses a centralized Star topology requiring a gateway. For a dec
 When a new ESP32 node is powered on in the field, it must autonomously securely integrate into the existing mesh.
 
 1.  **Passive Listening:** The new node enters LoRa RX mode on the predefined India ISM band (865-867 MHz) and listens for `HELLO` beacons from existing nodes.
-2.  **HELLO Broadcast:** The new node broadcasts its own `HELLO` packet containing its MAC address and its current hop count to a designated sink (if one exists, otherwise it just registers as a peer).
+2.  **HELLO Broadcast:** The new node broadcasts its own `HELLO` packet containing its MAC address and its current hop count to the designated sink (the Master Node).
 3.  **Routing Table Update:** Neighboring nodes receive the `HELLO`, update their local DV routing tables, and rebroadcast a localized routing update.
 4.  **Cryptographic Handshake:** 
     *   The network utilizes AES-128-CTR. All nodes must be pre-provisioned with the symmetric Network Key.
@@ -46,3 +46,8 @@ struct __attribute__((packed)) LoRaPayload {
 ### C. PHY Tuning (SF7/SF8)
 *   The nodes are tuned specifically to Spreading Factors **SF7 and SF8**.
 *   *Why?* Higher spreading factors (SF11/12) provide massive range but take seconds to transmit, saturating the channel and draining the battery. By using SF7/SF8, we enforce shorter, faster hops between densely packed mesh nodes rather than long, slow point-to-point links.
+
+## 4. Master Node RPC & Data Polling
+With the introduction of a Master-Slave topology overlaid on the P2P mesh:
+*   **Remote Procedure Call (RPC):** The Master Node can inject command packets into the mesh (e.g., `[CMD: SET_POLL_RATE, TARGET: 0x4A, VAL: 600]`). Slave nodes route this packet using standard DV routing. The target slave executes the command and returns an `ACK`.
+*   **Efficient Polling Strategy (Token/Staggered):** To prevent the Master Node from flooding the network by requesting data from 100 nodes simultaneously, the Master uses **Staggered Polling**. It requests data from Node A. Node A replies. The Master waits for the channel to clear, then requests from Node B. This avoids LoRa packet collisions.
