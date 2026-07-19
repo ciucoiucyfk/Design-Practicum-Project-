@@ -177,7 +177,7 @@ To ensure macro-regional survivability (high vibration, extreme heat, monsoon hu
 
 ### B. Connectors
 *   **Board-to-Wire (Sensors):** Direct soldering is forbidden. All sensors must connect to the main PCB using **JST-XH (2.54mm pitch) latched connectors** to prevent disconnects due to wind vibration.
-*   **High-Current Power (Battery):** Use **XT30 connectors** between the 18650 battery array and the PCB for reliable, high-amp connections that can be easily unplugged for maintenance.
+*   **High-Current Power (Battery):** Use **XT60 connectors** between the 18650 battery array and the PCB for reliable, high-amp connections that can be easily unplugged for maintenance.
 *   **RF/Antenna:** The SX1262 connects to the external antenna using a shielded **IPEX/U.FL to SMA-Female Bulkhead** pigtail. The SMA connector mounts through the enclosure wall, sealed with an O-ring.
 
 ### C. Fasteners & Mechanical
@@ -221,7 +221,7 @@ Each node (both Master and Slave) contains the exact same micro-climate sensor a
 | **Physical Build** | IP67 ABS Enclosure + Gore-Tex Vents | ₹ 800 | [Robu.in](https://robu.in/product/waterproof-plastic-electronic-project-box-enclosure/) |
 | | ASA/PETG Filament (UV/Temp Resistant) | ₹ 250 | [Robu.in](https://robu.in/product/flashforge-petg-1-75mm-3d-printer-filament-1kg-black/) |
 | | M3/M2.5 SS Screws & Brass Inserts | ₹ 150 | [Local Hardware](#) |
-| | 22/26 AWG Silicone Wire + JST-XH/XT30 Connectors | ₹ 300 | [Robu.in](https://robu.in/product/jst-xh-2-54mm-pitch-connector-kit/) |
+| | 22/26 AWG Silicone Wire + JST-XH/XT60 Connectors | ₹ 300 | [Robu.in](https://robu.in/product/jst-xh-2-54mm-pitch-connector-kit/) |
 | | IPEX/U.FL to SMA Bulkhead Pigtail | ₹ 150 | [Robu.in](https://robu.in/product/ipex-to-sma-female-bulkhead-cable/) |
 | | Silicone Sealant & Desiccant Packets | ₹ 100 | [Local Hardware](#) |
 | **Total** | **Estimated Slave Node Cost** | **₹ 9,550** | |
@@ -247,7 +247,7 @@ Each node (both Master and Slave) contains the exact same micro-climate sensor a
 | **Physical Build** | IP67 ABS/Metal Enclosure + Vents | ₹ 800 | [Robu.in](https://robu.in/product/waterproof-plastic-electronic-project-box-enclosure/) |
 | | ASA/PETG Filament (UV/Temp Resistant) | ₹ 250 | [Robu.in](https://robu.in/product/flashforge-petg-1-75mm-3d-printer-filament-1kg-black/) |
 | | M3/M2.5 SS Screws & Brass Inserts | ₹ 150 | [Local Hardware](#) |
-| | 22/26 AWG Silicone Wire + JST-XH/XT30 Connectors | ₹ 300 | [Robu.in](https://robu.in/product/jst-xh-2-54mm-pitch-connector-kit/) |
+| | 22/26 AWG Silicone Wire + JST-XH/XT60 Connectors | ₹ 300 | [Robu.in](https://robu.in/product/jst-xh-2-54mm-pitch-connector-kit/) |
 | | IPEX/U.FL to SMA Bulkhead Pigtail | ₹ 150 | [Robu.in](https://robu.in/product/ipex-to-sma-female-bulkhead-cable/) |
 | | Silicone Sealant & Desiccant Packets | ₹ 100 | [Local Hardware](#) |
 | **Total** | **Estimated Master Node Cost** | **₹ 10,850** | |
