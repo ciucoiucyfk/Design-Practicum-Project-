@@ -53,6 +53,12 @@ graph TD
     S3 <-->|SPIN Alerts| S4
 ```
 
+### Architectural Flow Explanation:
+1.  **The Sub-Networks:** The graph divides the architecture into three distinct zones: the User Web Interface, the Master Node, and the Slave Mesh.
+2.  **Slave Mesh (P2P Layer):** Slave Nodes A, B, C, and D communicate bidirectionally with each other using LoRa RF on the 865-867MHz band. Because they use a Distance-Vector (DV) routing protocol, Slave D can route a packet through Slave B to reach the Master, eliminating the need for a central star-topology tower. They also exchange SPIN alerts (Advertisements/Requests) amongst themselves to warn of incoming weather anomalies before the Master even knows.
+3.  **Master Node (The Bridge):** The Master Node acts as a dual-interface gateway. On one side, it possesses the exact same LoRa MAC (SX1262) as the slaves, allowing it to inject RPC commands into the mesh and poll nodes for telemetry. It then feeds this telemetry into its onboard Spatial Kriging Engine to interpolate weather data for areas *between* the physical nodes.
+4.  **Web Interface (The Exit Node):** The Master Node takes the interpolated data and hosts it on its local SD card via a native WiFi Access Point. An Administrator connects their laptop to this WiFi, opens a browser, and views a React/Leaflet dashboard. The Admin can click a button on the UI, which travels backward down the chain: WiFi -> Master ESP32 -> LoRa RF -> specific Slave Node to execute an RPC command.
+
 ---
 
 ## 3. Strict Software Modularization (The 7 Layers)
@@ -107,6 +113,14 @@ classDiagram
     Layer4_Crypto --> Layer5_Routing : push(Queue 4)
     Layer5_Routing --> Layer6_LoRaPHY : push(Queue 5)
 ```
+
+### Data Flow & Execution Explanation:
+This class diagram illustrates the "Zero-Coupling" philosophy. Data only moves in one direction (Top to Bottom) via FreeRTOS Queues. 
+1.  **Awakening (Layer 0):** The hardware RTOS timer or a physical GPIO pin interrupt (like a lightning strike on the AS3935) triggers Layer 0, waking the ESP32 CPU from Deep Sleep.
+2.  **Gathering (Layer 1):** The Hardware Abstraction Layer executes I2C, UART, and ADC reads across the 11-sensor array. It bundles this raw data into a `SensorDataStruct` and pushes it into FreeRTOS Queue 1.
+3.  **Math & AI (Layer 2 & 3):** Layer 2 pulls the struct, strips away the hardware context, applies mathematical Min-Max scaling, and pushes a pure 1D Tensor array of floats to Queue 2. Layer 3 (TinyML) ingests this tensor, runs it through an XGBoost decision tree, and outputs a simple 8-bit Anomaly Index (e.g., 0=Normal, 2=Severe Storm) to Queue 3.
+4.  **Security & Routing (Layer 4 & 5):** Layer 4 pulls the Anomaly Index, encrypts it using AES-128-CTR with the current rolling nonce, and signs it with HMAC-SHA256. It pushes the resulting ciphertext to Queue 4. Layer 5 retrieves the ciphertext, slaps on a P2P SPIN routing header (target MAC, hop count), and pushes it to Queue 5.
+5.  **Transmission (Layer 6):** Finally, Layer 6 triggers the hardware SPI Direct Memory Access (DMA), blasting the byte array out of the SX1262 LoRa antenna using Adaptive Data Rate. 
 
 ### The Modular Rules of Engagement
 *   **Layer 1 (HAL):** *Rule:* Completely blind to the network. It solely reads registers and dumps raw `SensorDataStructs` into Queue 1.
