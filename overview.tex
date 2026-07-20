@@ -1,0 +1,897 @@
+\documentclass[12pt,a4paper]{article}
+
+% -----------------------------------------------------------------------
+% PACKAGES
+% -----------------------------------------------------------------------
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{parskip}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{mdframed}
+\usepackage{tcolorbox}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{makecell}
+
+\tcbuselibrary{skins, breakable}
+
+% -----------------------------------------------------------------------
+% COLORS
+% -----------------------------------------------------------------------
+\definecolor{primary}{RGB}{31, 78, 121}
+\definecolor{accent}{RGB}{0, 112, 192}
+\definecolor{codegreen}{RGB}{0, 128, 0}
+\definecolor{codegray}{RGB}{128, 128, 128}
+\definecolor{codebg}{RGB}{248, 248, 248}
+\definecolor{notebg}{RGB}{232, 244, 255}
+\definecolor{warnbg}{RGB}{255, 243, 205}
+\definecolor{warnborder}{RGB}{204, 153, 0}
+\definecolor{headerbg}{RGB}{31, 78, 121}
+
+% -----------------------------------------------------------------------
+% HYPERREF SETUP
+% -----------------------------------------------------------------------
+\hypersetup{
+    colorlinks=true,
+    linkcolor=accent,
+    urlcolor=accent,
+    citecolor=accent,
+    pdftitle={Hybrid Mesh Micro-Climate WSN -- Comprehensive Technical Overview},
+    pdfauthor={Design Practicum Project},
+    pdfsubject={Wireless Sensor Network Engineering},
+    pdfkeywords={WSN, LoRa, TinyML, AODV, ESP32, LiFePO4, Kriging}
+}
+
+% -----------------------------------------------------------------------
+% SECTION TITLE FORMATTING
+% -----------------------------------------------------------------------
+\titleformat{\section}
+  {\large\bfseries\color{primary}}
+  {\thesection}{1em}{}[\titlerule]
+
+\titleformat{\subsection}
+  {\normalsize\bfseries\color{accent}}
+  {\thesubsection}{1em}{}
+
+\titleformat{\subsubsection}
+  {\normalsize\bfseries}
+  {\thesubsubsection}{1em}{}
+
+% -----------------------------------------------------------------------
+% HEADER / FOOTER
+% -----------------------------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textcolor{primary}{\textbf{Hybrid Mesh Micro-Climate WSN}}}
+\fancyhead[R]{\small\textcolor{codegray}{Design Practicum Project}}
+\fancyfoot[C]{\small\textcolor{codegray}{\thepage}}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% -----------------------------------------------------------------------
+% CODE LISTING STYLE
+% -----------------------------------------------------------------------
+\lstdefinestyle{cppstyle}{
+    backgroundcolor=\color{codebg},
+    commentstyle=\color{codegreen}\itshape,
+    keywordstyle=\color{primary}\bfseries,
+    stringstyle=\color{red!70!black},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=8pt,
+    numberstyle=\tiny\color{codegray},
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=4,
+    frame=single,
+    rulecolor=\color{gray!30},
+    xleftmargin=15pt,
+    framexleftmargin=15pt
+}
+\lstset{style=cppstyle}
+
+% -----------------------------------------------------------------------
+% CUSTOM NOTE BOXES
+% -----------------------------------------------------------------------
+\newtcolorbox{notebox}{
+    colback=notebg, colframe=accent, arc=4pt,
+    boxrule=0.8pt, left=6pt, right=6pt, top=4pt, bottom=4pt,
+    title={\small\textbf{\textcolor{accent}{Engineering Note}}},
+    fonttitle=\small\bfseries, breakable
+}
+
+\newtcolorbox{warnbox}{
+    colback=warnbg, colframe=warnborder, arc=4pt,
+    boxrule=0.8pt, left=6pt, right=6pt, top=4pt, bottom=4pt,
+    title={\small\textbf{\textcolor{warnborder}{Critical Warning}}},
+    fonttitle=\small\bfseries, breakable
+}
+
+\newtcolorbox{correctionbox}{
+    colback=red!5!white, colframe=red!60!black, arc=4pt,
+    boxrule=0.8pt, left=6pt, right=6pt, top=4pt, bottom=4pt,
+    title={\small\textbf{Verified Correction}},
+    fonttitle=\small\bfseries, breakable
+}
+
+% -----------------------------------------------------------------------
+% TABLE COLUMN TYPE
+% -----------------------------------------------------------------------
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+% -----------------------------------------------------------------------
+% DOCUMENT
+% -----------------------------------------------------------------------
+\begin{document}
+
+% ============================= TITLE PAGE =============================
+\begin{titlepage}
+    \centering
+    \vspace*{1.5cm}
+    
+    {\Huge\bfseries\color{primary} Hybrid Mesh\\[0.4em]Micro-Climate WSN\par}
+    \vspace{0.6em}
+    {\LARGE\color{accent} Comprehensive Technical Overview\par}
+    
+    \vspace{1.5em}
+    \hrule height 2pt
+    \vspace{0.8em}
+    
+    {\large\itshape Design Practicum Project\par}
+    \vspace{0.4em}
+    {\normalsize\textcolor{codegray}{Document Verified: July 2026\par
+    All engineering claims cross-checked against datasheets,\\
+    RFC standards, and independent research.}\par}
+    
+    \vspace{1.5em}
+    \hrule height 0.5pt
+    \vspace{2em}
+    
+    \begin{tcolorbox}[colback=primary!5, colframe=primary, arc=6pt, boxrule=1pt, width=0.85\textwidth]
+    \centering
+    \textbf{Key Technologies}\par\vspace{0.5em}
+    \begin{tabular}{lll}
+      \textbullet\ LoRa 865 MHz (IN865)  & \textbullet\ TinyML / XGBoost    & \textbullet\ AES-128-CCM \\
+      \textbullet\ AODV Mesh Routing     & \textbullet\ Spatial Kriging     & \textbullet\ LiFePO4 Power \\
+      \textbullet\ ESP32-S3 WROOM        & \textbullet\ SX1262 Transceiver  & \textbullet\ React PWA \\
+    \end{tabular}
+    \end{tcolorbox}
+    
+    \vfill
+    {\small\textcolor{codegray}{Slave Node Est. Cost: Rs.\,12{,}060 \quad|\quad Master Node Est. Cost: Rs.\,14{,}210}}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ===================================================================
+% ABOUT THIS PROJECT
+% ===================================================================
+\section*{About This Project}
+\addcontentsline{toc}{section}{About This Project}
+
+This project is a ground-up engineering effort to design, build, and deploy a \textbf{self-sustaining, solar-powered, AI-augmented Wireless Sensor Network (WSN)} capable of performing continuous, high-resolution micro-climate monitoring across a macro-regional geographic area---without any reliance on cellular infrastructure, cloud services, or paid spectrum.
+
+The core innovation is the fusion of three independent technologies into a single coherent system:
+
+\begin{enumerate}[leftmargin=*, label=\textbf{\arabic*.}]
+    \item \textbf{Long-Range RF (LoRa):} Sub-GHz radio reaching 5--15\,km in open terrain on milliwatts of power, using the free 865--867\,MHz ISM band allocated by India's Wireless Planning and Coordination (WPC) Wing.
+    \item \textbf{Embedded Machine Learning (TinyML):} A pre-trained XGBoost decision-tree model flashed into each sensor node's firmware, enabling real-time local anomaly detection without cloud dependency.
+    \item \textbf{Reactive Mesh Networking (AODV):} A lightweight, on-demand routing protocol forming a self-healing mesh that survives node failures and obstructions without a centralised access point.
+\end{enumerate}
+
+Each sensor node (\textbf{Slave Node}) is a weatherproofed, IP67-sealed embedded system built around the ESP32-S3 microcontroller, hosting an array of 11 environmental sensors. It runs entirely on a 10\,W solar panel and a LiFePO4 battery, with an average current draw verified at under 0.5\,mA.
+
+A single \textbf{Master Node} aggregates sensor data from all Slave Nodes, performs Spatial Kriging interpolation, and serves results via a lightweight JSON REST API over a local WiFi Access Point.
+
+\textbf{Primary application domains:} severe weather early warning, wildfire smoke detection, illegal logging detection (acoustic AI), agricultural drought mapping, and ambient radiation monitoring.
+
+\newpage
+
+% ===================================================================
+\section{Executive Summary}
+% ===================================================================
+
+This project designs and validates a \textbf{Hybrid Mesh Wireless Sensor Network (WSN)} for macro-regional micro-climate mapping and severe weather anomaly detection. By coupling long-range LoRa radio with on-device TinyML inference (XGBoost), the network eliminates cloud dependency entirely.
+
+Each node operates autonomously on solar power, runs local anomaly detection, and remains radio-silent during normal conditions. Only genuine weather anomalies trigger unsolicited emergency transmissions. The Master Node polls Slave Nodes during synchronized listening windows.
+
+\subsection{Advantages Over Conventional WSN Systems}
+
+\begin{table}[h!]
+\centering
+\caption{System Comparison: This Design vs.\ Conventional Cellular WSN}
+\begin{tabularx}{\textwidth}{L{3.5cm} L{4.5cm} L{5.5cm}}
+\toprule
+\textbf{Criterion} & \textbf{Conventional Cellular WSN} & \textbf{This System} \\
+\midrule
+Recurring Cost & Rs.\,200--500/node/month (SIM) & Rs.\,0 (ISM band, license-exempt) \\
+Infrastructure & Dies when cell towers fail & Fully P2P; mesh survives independently \\
+Spatial Resolution & km-scale & Meter-scale; deployable anywhere \\
+Battery Life & 6--18 months & Indefinite (solar + LiFePO4) \\
+Intelligence & Dumb data relay; cloud processing & On-device XGBoost anomaly gating \\
+Failure Tolerance & Single gateway = SPOF & AODV self-heals around dead nodes \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ===================================================================
+\section{System Architecture \& Topology}
+% ===================================================================
+
+The network deliberately abandons the LoRaWAN star topology in favour of a \textbf{Hybrid Mesh}. Slave Nodes relay packets for each other using AODV routing, so nodes beyond the Master's direct radio range remain fully connected.
+
+\subsection{Architectural Zones}
+
+\begin{description}[leftmargin=2em]
+    \item[Zone 1 --- Admin Client Device:] Runs an offline-first React/Leaflet Progressive Web App (PWA). Fetches lightweight JSON from the Master's REST API. No server-side code executes here.
+    \item[Zone 2 --- Master Node (ESP32-S3-N16R8):] Maintains dual radio interfaces: WiFi Access Point (for admin PWA) and SX1262 LoRa transceiver (for the mesh). Its Spatial Kriging engine interpolates weather data between physical sensor locations. A DS3231 hardware RTC maintains UTC timestamps that synchronize network-wide polling windows.
+    \item[Zone 3 --- Slave Mesh:] Field-deployed array of identical sensor nodes communicating exclusively over LoRa RF. WiFi and Bluetooth are disabled during normal operation to preserve power.
+\end{description}
+
+% ===================================================================
+\section{Slave Node Firmware --- Sequential Execution Architecture}
+% ===================================================================
+
+\subsection{Design Philosophy}
+
+The slave node firmware is implemented as a \textbf{Monolithic Sequential Task Flow} within a single FreeRTOS task. Using multiple FreeRTOS tasks communicating via queues introduces:
+
+\begin{itemize}
+    \item \textbf{Task Stack RAM overhead:} Each task requires its own stack (2--8\,KB), consuming precious SRAM.
+    \item \textbf{Context-switch CPU cycles:} The RTOS scheduler prevents full clock gating, extending active time.
+    \item \textbf{Extended active window:} CPU must remain powered longer for inter-task coordination, destroying the sleep-current budget.
+\end{itemize}
+
+A sequential pipeline executes fully and deterministically before calling \texttt{esp\_deep\_sleep\_start()}.
+
+\subsection{Step-by-Step Execution}
+
+\begin{enumerate}[leftmargin=*, label=\textbf{Step \arabic*:}]
+    \item \textbf{Wake} --- RTC 5-minute timer or GPIO interrupt (AS3935 / Pluviometer) exits deep sleep.
+    \item \textbf{Boot Init} --- Load AES-128-CCM pre-shared key and rolling nonce from RTC RAM.
+    \item \textbf{Power Sensors} --- Assert MOSFET gate pins; wait 50\,ms for I2C bus stabilisation.
+    \item \textbf{Read Sensors} --- Sequential I2C/UART/ADC reads across 11 sensors (\textasciitilde80\,ms total).
+    \item \textbf{Preprocess} --- Min-Max scaling into 22-float 1D tensor (11 absolute + 11 delta values).
+    \item \textbf{TinyML Inference} --- XGBoost decision tree on the tensor; outputs 8-bit Anomaly Index (\textasciitilde15\,ms).
+    \item \textbf{AI Gate} --- 
+        \begin{itemize}
+            \item If Index\,$>$\,0: proceed to Crypto TX (unsolicited anomaly alert).
+            \item If Index\,$=$\,0: check RTC for synchronized polling window (2\,s window, e.g.\ top of every hour). If in window, open LoRa RX and await \texttt{CMD\_SEND\_TELEMETRY}. If polled, proceed to Crypto TX. Otherwise, sleep immediately.
+        \end{itemize}
+    \item \textbf{Crypto TX} --- Encrypt and authenticate payload with AES-128-CCM; increment nonce in RTC RAM.
+    \item \textbf{LoRa TX + ACK} --- SPI DMA transfer to SX1262; await link-layer ACK (\textasciitilde500\,ms timeout).
+    \item \textbf{Deep Sleep} --- \texttt{esp\_deep\_sleep\_start()}; ULP resets 5-minute timer; total draw collapses to \textasciitilde63\,$\mu$A.
+\end{enumerate}
+
+% ===================================================================
+\section{Power System Design \& Autonomy Validation}
+% ===================================================================
+
+\subsection{Battery Chemistry --- LiFePO4 (Mandatory)}
+
+\begin{warnbox}
+Standard NMC/NCA Li-Ion 18650 cells are \textbf{explicitly prohibited}. Indian summer ambient temperatures reach 45--48\,\textdegree C. Inside a sealed sun-facing IP67 ABS enclosure, internal temperatures exceed \textbf{65--75\,\textdegree C}. NMC Li-Ion undergoes accelerated degradation above 45\,\textdegree C and enters thermal runaway above $\approx$70\,\textdegree C. NMC offers only 300--500 cycles.
+\end{warnbox}
+
+\textbf{LiFePO4 (Lithium Iron Phosphate)} is selected because:
+\begin{itemize}
+    \item Thermally stable to \textasciitilde270\,\textdegree C (vs.\ \textasciitilde150\,\textdegree C for NMC)
+    \item 2{,}000--3{,}000 charge cycles with less than 20\% capacity loss
+    \item Cell voltage: 3.2\,V nominal, 3.65\,V charge termination --- requires LiFePO4-specific MPPT controller
+\end{itemize}
+
+\subsection{MPPT Charge Controller --- CN3722}
+
+The CN3722 (CONSONANCE Semiconductor) is verified to support LiFePO4 charging via external resistor divider on the FB pin, configuring charge termination to exactly 3.65\,V/cell.
+
+\begin{notebox}
+The 10\,W/12\,V monocrystalline panel's open-circuit voltage (Voc) is \textasciitilde21\,V; Vmpp\,$\approx$\,17.5\,V. The CN3722's maximum input is 6\,V. An \textbf{LM2596 step-down pre-regulator} (set to 5.5\,V output) is required between the panel and CN3722. This component is included in the BOM.
+\end{notebox}
+
+\subsection{Voltage Regulation --- XC6220B331MR (1\,A LDO)}
+
+The XC6220B331MR (Torex Semiconductor) was selected over the HT7333 because the SX1262 LoRa radio draws up to \textbf{118\,mA at +22\,dBm TX} (Semtech SX1262 datasheet Rev~2.1). Peak combined draw during TX is 200--250\,mA. The XC6220's 1\,A rating provides $>$4$\times$ headroom. The HT7333's 250\,mA limit causes guaranteed brownout resets on every transmission.
+
+\subsection{Power Autonomy Calculation}
+
+\begin{table}[h!]
+\centering
+\caption{Average Current Budget per 5-Minute Operating Cycle}
+\begin{tabular}{L{4cm} C{2.2cm} C{3cm} C{2.8cm}}
+\toprule
+\textbf{State} & \textbf{Current} & \textbf{Duration / Cycle} & \textbf{Avg Contribution} \\
+\midrule
+Deep Sleep (ULP + LDO) & 63\,$\mu$A & 299.8\,s & 0.063\,mA \\
+Sensor Read (CPU + I2C) & 120\,mA & 0.08\,s & 0.032\,mA \\
+XGBoost Inference & 80\,mA & 0.015\,s & 0.004\,mA \\
+LoRa TX (SF8, 22\,dBm) & 120\,mA & 0.118\,s & 0.047\,mA \\
+LoRa RX (Poll Window) & 12\,mA & 2\,s (1$\times$/hour) & 0.001\,mA \\
+\midrule
+\textbf{Total Average} & & & \textbf{0.147\,mA} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{itemize}
+    \item \textbf{Battery:} 32650 LiFePO4, 6{,}000\,mAh at 3.2\,V nominal
+    \item \textbf{Autonomy (no solar):} $6{,}000 \div 0.147 \approx \mathbf{40{,}816\,h \approx 4.7\,years}$
+    \item \textbf{Solar input (clear sky):} $10\,\text{W} \times 5\,\text{h/day} = 50\,\text{Wh/day}$; daily node use $\approx 0.011\,\text{Wh}$ --- panel output is $>$4{,}500$\times$ daily consumption
+    \item \textbf{Solar input (heavy monsoon):} Realistically 5--10\,Wh/day --- still $>$450$\times$ daily consumption
+\end{itemize}
+
+% ===================================================================
+\section{Peer-to-Peer Mesh Routing --- AODV}
+% ===================================================================
+
+\subsection{Why Not Distance-Vector (DV)?}
+
+Classic DV routing requires every node to proactively broadcast its entire routing table. In a 50-node network, each broadcast is $\ge$50\,bytes transmitted by every node continuously --- creating a \textbf{broadcast storm} that destroys LoRa channel capacity. DV is architecturally incompatible with low-bandwidth LoRa.
+
+\subsection{AODV --- Ad-hoc On-Demand Distance Vector (IETF RFC~3561)}
+
+AODV is a \textit{reactive} protocol. Routes are only discovered when needed --- no periodic broadcasts.
+
+\begin{enumerate}
+    \item \textbf{Route Discovery:} Node A broadcasts a \texttt{RREQ} (Route Request) only when it needs a route.
+    \item \textbf{Propagation:} Relay nodes forward the \texttt{RREQ} until it reaches the destination.
+    \item \textbf{Confirmation:} The destination sends a \texttt{RREP} (Route Reply) back on the exact discovered path.
+    \item \textbf{Execution:} Node A caches the route and sends its payload. Routes expire if unused (3600\,s lifetime).
+    \item \textbf{Self-Healing:} Failed links trigger \texttt{RERR} (Route Error) packets; nodes invalidate stale routes and re-discover automatically within one cycle ($\approx$500\,ms).
+\end{enumerate}
+
+\subsection{Custom LoRa-Adapted AODV Packet Sizes}
+
+The standard RFC~3561 format uses 4-byte IPv4 addresses (RREQ\,=\,24\,bytes, RREP\,=\,20\,bytes). For this LoRa implementation, IPv4 addresses are replaced with \textbf{2-byte node IDs}, and a \textbf{2-byte software CRC-16 checksum} is appended to all packets (both AODV control and data) to allow fast validation and immediate drop of corrupted packets on relay nodes:
+
+\begin{table}[h!]
+\centering
+\caption{Custom Binary AODV Packet Sizes}
+\begin{tabular}{L{2cm} L{9cm} C{2cm}}
+\toprule
+\textbf{Packet} & \textbf{Fields} & \textbf{Total} \\
+\midrule
+RREQ & Type(1) + Flags(1) + HopCount(1) + BcastID(2) + DestID(2) + DestSeq(2) + OrigID(2) + OrigSeq(2) + Checksum(2) & \textbf{15\,B} \\
+RREP & Type(1) + Flags(1) + HopCount(1) + DestID(2) + DestSeq(2) + OrigID(2) + Lifetime(2) + Checksum(2) & \textbf{13\,B} \\
+RERR & Type(1) + DestID(2) + ErrorCode(1) + Checksum(2) & \textbf{6\,B} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+At SF8/BW125, a 15-byte RREQ has a ToA of $\approx$77\,ms --- negligible airtime for an on-demand operation. Intermediate relay nodes verify this software CRC-16 (using the standard CRC-16-CCITT polynomial \texttt{0x1021}) first; if the check fails, the packet is immediately dropped before performing decryption/authentication, conserving CPU resources and battery power.
+
+% ===================================================================
+\section{Security \& Cryptography}
+% ===================================================================
+
+\subsection{AES-128-CCM (Counter with CBC-MAC)}
+
+AES-128-CCM is standardised in NIST SP~800-38C and IETF RFC~3610. It is the cryptographic foundation of IEEE~802.15.4 (Zigbee) and LoRaWAN~1.1 payload encryption. It achieves confidentiality and authenticity in a single pass:
+
+\begin{itemize}
+    \item \textbf{Confidentiality:} Payload encrypted using AES in Counter (CTR) mode.
+    \item \textbf{Authenticity:} 8-byte Message Integrity Code (MIC) generated via CBC-MAC. RFC~3610 permits tag lengths of 4, 6, 8, 10, 12, 14, or 16 bytes. The 8-byte selection offers $2^{64}$ possible MIC values, rendering forgery computationally infeasible.
+\end{itemize}
+
+\begin{notebox}
+\textbf{LoRaWAN comparison:} Standard LoRaWAN~1.1 uses AES-CMAC with a 4-byte MIC. This project is a \textbf{custom private mesh network}, deliberately selecting an 8-byte MIC for stronger authentication on a private low-traffic link.
+\end{notebox}
+
+Total packet overhead: \textbf{8\,bytes (AES-128-CCM MIC) + 2\,bytes (software CRC-16 checksum) = 10\,bytes}. HMAC-SHA256 would add 32\,bytes --- a 300\% overhead increase unacceptable on a LoRa link.
+
+\subsection{Nonce Management}
+
+The 32-bit nonce (packet counter) is stored in \textbf{RTC RAM} (persists through deep sleep). After each encrypted transmission, it is atomically incremented. Every 100 transmissions, it is backed up to NVS flash. New node integration uses a \textbf{challenge-response handshake} under a factory-provisioned bootstrap key to assign a fresh nonce range without replay exposure.
+
+\subsection{Secure RPC Execution}
+
+All RPC commands from Master to Slave are authenticated. The Slave: (1) decrypts with AES-128-CCM, (2) validates the 8-byte MIC (single-bit mismatch = silent rejection), (3) verifies nonce is within expected window ($\pm5$), (4) only then executes the command.
+
+% ===================================================================
+\section{Master Node --- Spatial Kriging Engine}
+% ===================================================================
+
+\subsection{What is Spatial Kriging?}
+
+\textbf{Ordinary Kriging} (Matheron, 1963) is a Gaussian process regression technique that estimates values at unobserved spatial locations:
+
+\[
+z^*(x^*, y^*) = \sum_{i=1}^{N} \lambda_i \cdot z_i
+\]
+
+Weights $\lambda_i$ are computed by solving an $(N+1)\times(N+1)$ system of linear equations that minimises estimation variance, using a spatial variogram model.
+
+\subsection{Feasibility on ESP32-S3}
+
+For $N = 10$--$20$ nodes:
+\begin{itemize}
+    \item Matrix size: $21 \times 21 = 441$ floats $= 1.7$\,KB RAM
+    \item Gaussian elimination: $O(N^3) \approx 9{,}261$ multiply-accumulate operations
+    \item At 240\,MHz on ESP32-S3: completes in \textbf{$<$5\,ms}
+\end{itemize}
+
+The 8\,MB PSRAM of the ESP32-S3-N16R8 provides sufficient working memory. Active computation variables should reside in internal SRAM (\textasciitilde512\,KB) for speed; PSRAM is used for storage buffers only (PSRAM is accessed via SPI and is $\approx$10$\times$ slower than internal SRAM).
+
+\subsection{Predictive Radiation Level \& Plume Dispersion Module}
+
+To provide early forecasting rather than purely reactive warnings, the network integrates a two-stage \textbf{Predictive Radiation Level Modeling} module split between edge nodes and the Master.
+
+\subsubsection{Local Node Filtration \& Background Calibration}
+\begin{itemize}
+    \item \textbf{Poisson Noise Filtering:} The BPW34 PIN diode has a small active surface area (7.5\,mm$^2$), resulting in low background counts per minute (CPM) and high statistical Poisson noise. The Slave Node runs an embedded \textbf{One-Dimensional Kalman Filter} to smooth out statistical fluctuations and estimate the true local CPM background level without lag.
+    \item \textbf{Radon Washout Prediction:} During heavy precipitation, natural radon decay products (Lead-214 and Bismuth-214) are washed out from the atmosphere, temporarily spiking the local radiation background by up to 2$\times$ (Radon Washout). To prevent false alarms, the node's XGBoost model uses inputs from the Pluviometer and the BME680 barometric pressure to predict expected precipitation-induced radiation spikes:
+    \[
+    \text{CPM}_{\text{expected}} = \alpha \times \text{RainRate} + \beta \times \text{BarometricPressure} + \text{Baseline}
+    \]
+    If the measured CPM exceeds $\text{CPM}_{\text{expected}}$ by a pre-set threshold (e.g., $3\sigma$), the node classifies it as a true nuclear/industrial anomaly and initiates an emergency alert.
+\end{itemize}
+
+\subsubsection{Master Node Dispersion Prediction (Gaussian Plume Model)}
+When a Slave Node reports a true, verified radiation anomaly, the Master Node executes a \textbf{Gaussian Plume Dispersion Model} to predict the future geographic spread of the radioactive plume across the region:
+\begin{itemize}
+    \item \textbf{Plume Vectoring:} The Master pulls the wind speed ($u$) from the reporting node's Anemometer and the absolute wind direction ($\theta$) from the AS5600 wind vane.
+    \item \textbf{Concentration Projection:} Using the advection-diffusion equation, the Master calculates the predicted ground-level concentration $C(x,y)$ downwind over a 1--6 hour horizon:
+    \[
+    C(x,y) = \frac{Q}{\pi u \sigma_y \sigma_z} \exp\left( -\left[ \frac{y^2}{2\sigma_y^2} + \frac{H^2}{2\sigma_z^2} \right] \right)
+    \]
+    where $Q$ is the estimated source term, $y$ is the crosswind distance, $H$ is release height, and $\sigma_y, \sigma_z$ are stability-dependent dispersion coefficients.
+    \item \textbf{Visualization:} This predicted dispersion grid is fed into the Spatial Kriging engine and served as a GeoJSON contour layer to the Leaflet PWA, allowing emergency services to visualize the predicted fallout zone in real-time.
+\end{itemize}
+
+% ===================================================================
+\section{Sensor Array --- Full Technical Specifications}
+% ===================================================================
+
+\begin{longtable}{L{1.5cm} L{2cm} L{2cm} L{4cm} L{4.5cm}}
+\caption{11-Sensor Micro-Climate Array (Identical on Master and Slave Nodes)} \\
+\toprule
+\textbf{\#} & \textbf{Sensor} & \textbf{Protocol} & \textbf{Parameters} & \textbf{Engineering Notes} \\
+\midrule
+\endfirsthead
+\multicolumn{5}{c}{\small\itshape (continued from previous page)} \\
+\toprule
+\textbf{\#} & \textbf{Sensor} & \textbf{Protocol} & \textbf{Parameters} & \textbf{Engineering Notes} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{5}{r}{\small\itshape (continued on next page)} \\
+\endfoot
+\bottomrule
+\endlastfoot
+
+1 & BME680 & I2C (0x76) & Temp ($\pm$1\,\textdegree C), RH ($\pm$3\%), Pressure ($\pm$1\,hPa), VOC IAQ & 25\,ms measurement cycle; integrated heater for gas sensing. \\
+2 & AS3935 & I2C/SPI & Lightning distance 1--40\,km, energy estimate & \textbf{EMI Critical:} Must be enclosed in grounded copper Faraday shield inside PCB ground pour. SX1262 at 22\,dBm causes false-positive interrupts without shielding. \\
+3 & NEO-6M GPS & UART 9600 & Latitude, Longitude, UTC ($\pm$1\,$\mu$s) & Used once at deployment for geo-registration. Subsequent UTC sync from DS3231 via Master beacon. Power-gated after registration. \\
+4 & Anemometer & GPIO/PCNT & Wind speed (m/s) via pulse frequency & A3144 Hall-Effect sensor. Each magnet pass = one PCNT interrupt. Speed = frequency $\times$ calibration constant. \\
+5 & Pluviometer & GPIO IRQ & Precipitation (mm) via bucket tip & Reed switch; 1 tip $=$ 0.2\,mm. Remains powered at nano-amp level during deep sleep to trigger emergency wake. \\
+6 & BPW34 + LM358 & ADC & Beta/Gamma radiation (count rate) & Ionising particle strikes reverse-biased BPW34; $\sim$1\,nA pulse amplified by LM358 TIA to ADC-detectable spike. Validated in IEEE embedded dosimeter literature. Must be optically shielded. \\
+7 & INMP441 + LM393 & I2S + GPIO & Acoustic classification & LM393 comparator ($\mu$A quiescent) triggers GPIO wake when decibel threshold crossed. INMP441 powers on for 500\,ms FFT/classifier window only. \\
+8 & PMS5003 & UART 9600 & PM1.0, PM2.5, PM10 ($\mu$g/m$^3$) & Internal fan $\sim$80\,mA. Heavily power-gated. 500\,ms fan warm-up required before valid readings. \\
+9 & AS5600 & I2C (0x36) & Wind vane direction 0--359\textdegree, 12-bit & Contactless magnetic encoder; fixed I2C address 0x36 (non-configurable). Zero friction wear. \\
+10 & LTR390-UV & I2C (0x53) & UVA, Ambient Light (Lux) & Digital UV Sensor: Measures UVA light and ambient light. Onboard ADC and logic outputs counts to compute UV index and lux. Replacing obsolete VEML6075. \\
+11 & SHT20 & I2C (0x40) & Soil temp ($\pm$0.3\,\textdegree C), Soil moisture & \textbf{Clarification:} SHT20 is natively I2C. RS-485 is a module-level wrapper in industrial transmitters. Direct I2C wiring used here via potted waterproof probe cable. \\
+\end{longtable}
+
+% ===================================================================
+\section{Master-Slave RPC Command Set}
+% ===================================================================
+
+All commands are transmitted as encrypted AES-128-CCM payloads. The Slave verifies MIC and nonce before execution.
+
+\begin{lstlisting}[language=C++, caption={RPC Opcode Enumeration (firmware/rpc.h)}]
+/**
+ * @enum RpcCommand
+ * @brief Network-wide RPC opcodes for Master -> Slave injection.
+ * All commands are AES-128-CCM encrypted. Slave MUST verify
+ * MIC + nonce window before executing any command.
+ */
+enum RpcCommand : uint8_t {
+    CMD_FORCE_INFERENCE  = 0x01, // Force immediate sensor read + XGBoost
+    CMD_SEND_TELEMETRY   = 0x02, // Reply with full SensorDataStruct (poll)
+    CMD_UPDATE_THRESH    = 0x03, // Update XGBoost anomaly threshold
+    CMD_SET_SLEEP_PERIOD = 0x04, // Change deep sleep interval (seconds)
+    CMD_DISABLE_PERIPH   = 0x05, // Cut MOSFET power to a broken sensor
+    CMD_REBOOT           = 0x06, // Issue esp_restart() for OTA recovery
+    CMD_SYNC_NONCE       = 0x07, // Resync nonce after power-loss reset
+    CMD_GET_BATTERY      = 0x08  // Report battery voltage via ADC
+};
+\end{lstlisting}
+
+% ===================================================================
+\section{Engineering Design Standards}
+% ===================================================================
+
+\subsection{Cabling}
+
+\begin{table}[h!]
+\centering
+\caption{Wire Gauge and Insulation Specifications}
+\begin{tabular}{L{4cm} L{2cm} L{2.5cm} L{5cm}}
+\toprule
+\textbf{Line Type} & \textbf{Gauge} & \textbf{Insulation} & \textbf{Rationale} \\
+\midrule
+Power (Solar to MPPT to Battery) & 22\,AWG & Silicone & Handles up to 5\,A; resists 200\,\textdegree C; flexible at $-$40\,\textdegree C \\
+Signal (I2C, SPI, UART, GPIO) & 26\,AWG & Silicone & Capacitance $<$30\,pF/m; prevents I2C ACK corruption at 400\,kHz \\
+Antenna (SMA bulkhead) & RG-174 & PTFE-jacketed coax & Maintains 50\,$\Omega$ impedance; PTFE rated to 260\,\textdegree C \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Connectors}
+
+\begin{table}[h!]
+\centering
+\caption{Connector Specifications}
+\begin{tabular}{L{3cm} L{4cm} L{6.5cm}}
+\toprule
+\textbf{Application} & \textbf{Connector} & \textbf{Rationale} \\
+\midrule
+Sensor Board-to-Wire & JST-XH 2.54\,mm latched & Latching prevents vibration-induced disconnects; polarised \\
+Battery Power Rail & XT60H panel-mount & Rated 60\,A; gold-plated; polarised housing prevents shorts \\
+RF Antenna & IPEX/U.FL to SMA-F bulkhead & SMA-F through enclosure wall; sealed with neoprene O-ring \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Mechanical \& Enclosure}
+
+\begin{table}[h!]
+\centering
+\caption{Mechanical Specifications}
+\begin{tabular}{L{3.5cm} L{5cm} L{5cm}}
+\toprule
+\textbf{Item} & \textbf{Specification} & \textbf{Rationale} \\
+\midrule
+Enclosure & IP67-rated ABS, min 120$\times$80$\times$55\,mm & IP67 = 30\,min immersion to 1\,m \\
+Screws & M3 SS304 Socket Cap & SS304 corrosion-immune in monsoon humidity \\
+Threaded Inserts & M3 Brass heat-set (PETG/ASA) & Self-tapping plastic strips after 3--5 uses \\
+PCB Standoffs & M3 Nylon Hex (10\,mm) & Electrically isolates PCB from enclosure \\
+Acoustic Vents & IP67-rated PTFE membrane & Pressure equalisation without water ingress \\
+Sealant & Neutral-cure silicone only & Acetoxy-cure releases acetic acid, corroding PCB copper \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ===================================================================
+\section{Bill of Materials (BOM)}
+% ===================================================================
+
+\begin{warnbox}
+\textbf{Battery chemistry:} Standard Li-Ion/NMC 18650 cells are prohibited. All cells must be LiFePO4. \textbf{LTR390-UV Note:} Digital I2C sensor measuring UVA light and ambient light, replacing the obsolete VEML6075 for stable long-term sourcing. \textbf{LM2596 pre-regulator:} Required between solar panel (Voc\,$\approx$\,21\,V) and CN3722 (max 6\,V input). Included in BOM below.
+\end{warnbox}
+
+\subsection{Slave Node BOM}
+
+\begin{longtable}{L{2.5cm} L{6cm} C{0.8cm} C{1.5cm} L{2.8cm}}
+\caption{Slave Node Bill of Materials (Single Unit, Prototype Pricing)} \\
+\toprule
+\textbf{Category} & \textbf{Component} & \textbf{Qty} & \textbf{Price (Rs)} & \textbf{Notes} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Category} & \textbf{Component} & \textbf{Qty} & \textbf{Price (Rs)} & \textbf{Notes} \\
+\midrule
+\endhead
+\midrule \multicolumn{5}{r}{\small\itshape (continued on next page)} \\ \endfoot
+\bottomrule \multicolumn{4}{r}{\textbf{Slave Node Total}} & \textbf{Rs.\,12{,}060} \\ \endlastfoot
+Compute & ESP32-S3 WROOM-1 (N8, 8\,MB flash) & 1 & 650 & \\
+RF & SX1262 SPI Module (865--867\,MHz) & 1 & 750 & Ebyte E22-900M22S \\
+ & 3\,dBi Omni Dipole Antenna (SMA) & 1 & 200 & \\
+ & IPEX/U.FL to SMA-F Bulkhead Pigtail & 1 & 150 & RG-174, max 30\,cm \\
+Power & 10\,W Monocrystalline Solar Panel & 1 & 900 & \\
+ & LM2596 Buck Pre-regulator (5.5\,V out) & 1 & 80 & Steps Voc 21\,V down for CN3722 \\
+ & CN3722 MPPT Charge Controller (LiFePO4) & 1 & 450 & Set RPROG for 1\,A charge \\
+ & 32650 LiFePO4 Cell (3.2\,V, 6{,}000\,mAh) & 1 & 600 & EVE Energy LF32650 \\
+ & XC6220B331MR LDO (1\,A, 3.3\,V) & 1 & 60 & Iq\,=\,55\,$\mu$A \\
+ & IRLML2502 N-Ch MOSFET & 4 & 100 & Vgs(th)\,$<$\,2\,V \\
+ & Decoupling Caps (100\,$\mu$F + 100\,nF/rail) & --- & 50 & \\
+Sensors & BME680 Module & 1 & 950 & I2C 0x76 \\
+ & AS3935 Lightning IC + MA5532 Coil & 1 & 1{,}840 & DFRobot Gravity; in stock at Fab.to.Lab \\
+ & NEO-6M GPS Module & 1 & 450 & \\
+ & BPW34 PIN Photodiode & 1 & 100 & \\
+ & LM358 Dual Op-Amp (DIP-8) & 1 & 50 & Radiation TIA \\
+ & PMS5003 Particulate Sensor & 1 & 1{,}200 & \\
+ & INMP441 I2S MEMS Microphone & 1 & 150 & Power-gated \\
+ & LM393 Dual Comparator (DIP-8) & 1 & 30 & Acoustic threshold \\
+ & AS5600 Magnetic Encoder Module & 1 & 250 & \\
+ & LTR390-UV Digital UV Sensor & 1 & 750 & Waveshare LTR390-UV; in stock at Robu.in \\
+ & SHT20 Waterproof Probe (I2C) & 1 & 400 & Soil insertion \\
+ & A3144 Hall-Effect Sensor & 1 & 30 & Anemometer \\
+ & Reed Switch (SPST-NO) $\times$2 & 2 & 50 & Pluviometer \\
+Mechanical & IP67 ABS Enclosure & 1 & 600 & \\
+ & M3 Brass Heat-Set Inserts (x8) & 8 & 50 & \\
+ & M3 SS304 Screws + M2.5 Standoffs & --- & 90 & \\
+ & IP67 PTFE Acoustic/Pressure Vents & 2 & 200 & \\
+ & Copper Tape (AS3935 Shield) & 1 & 100 & \\
+ & Neutral-Cure Silicone Sealant & 1 & 80 & \\
+ & Silica Gel Desiccant (5\,g packets) & 2 & 20 & \\
+ & 22\,AWG Silicone Wire (5\,m) & 1 & 100 & \\
+ & 26\,AWG Silicone Wire (5\,m) & 1 & 80 & \\
+ & JST-XH 2.54\,mm Connector Kit & 1 & 100 & \\
+ & XT60H Connector Pair & 1 & 80 & \\
+ & ASA/PETG Filament (0.1\,kg) & 0.1 & 120 & \\
+\end{longtable}
+
+\subsection{Master Node Additional Components}
+
+\begin{table}[h!]
+\centering
+\caption{Master Node Additional BOM (Plus Slave BOM = Rs.\,14{,}210 Total)}
+\begin{tabular}{L{3cm} L{7cm} C{1cm} C{2cm}}
+\toprule
+\textbf{Category} & \textbf{Component} & \textbf{Qty} & \textbf{Price (Rs)} \\
+\midrule
+Compute Upgrade & ESP32-S3-N16R8 (16\,MB Flash / 8\,MB PSRAM) & 1 & 700 \\
+RF Upgrade & 8\,dBi Fiberglass Omni Antenna (868\,MHz, SMA) & 1 & 800 \\
+Storage & MicroSD SPI Module + 32\,GB MicroSD (Class\,10) & 1 & 500 \\
+Timing & DS3231 Precision RTC Module (I2C + CR2032) & 1 & 150 \\
+\midrule
+\multicolumn{3}{r}{\textbf{Additional Total}} & \textbf{Rs.\,2{,}150} \\
+\multicolumn{3}{r}{\textbf{Master Node Total (Slave + Additions)}} & \textbf{Rs.\,14{,}210} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{warnbox}
+\textbf{DS3231 Counterfeit Risk:} Authentic DS3231 modules achieve $\pm$2\,ppm accuracy via TCXO. Counterfeit modules sold on AliExpress/Amazon lack the genuine TCXO and drift 50--100$\times$ faster. \textbf{Verify chip authenticity before deployment.}
+\end{warnbox}
+
+% ===================================================================
+\section{Bandwidth \& RF Physics Validation}
+% ===================================================================
+
+\subsection{LoRa Configuration \& Time-on-Air}
+
+\textbf{Selected LoRa Parameters (IN865 band plan, LoRa Alliance Regional Parameters v1.0.3):}
+\begin{itemize}
+    \item Frequency: 865.0625\,MHz (IN865 Channel~0)
+    \item Spreading Factor: SF8 (default); SF9 for longer relay hops
+    \item Bandwidth: 125\,kHz \quad Coding Rate: 4/5 \quad Max Payload: 222\,bytes (SF8)
+\end{itemize}
+
+\begin{table}[h!]
+\centering
+\caption{Time-on-Air (ToA) --- Independently Verified via Semtech LoRa Calculator}
+\begin{tabular}{C{2.5cm} C{2.5cm} C{2cm} C{2cm} C{2cm}}
+\toprule
+\textbf{SF} & \textbf{Payload} & \textbf{BW} & \textbf{CR} & \textbf{ToA} \\
+\midrule
+SF7 & 25\,bytes & 125\,kHz & 4/5 & $\approx$46--52\,ms \\
+SF7 & 30\,bytes & 125\,kHz & 4/5 & $\approx$52--58\,ms \\
+SF8 & 25\,bytes & 125\,kHz & 4/5 & $\approx$92--103\,ms \\
+SF8 & 30\,bytes & 125\,kHz & 4/5 & \textbf{$\approx$103--118\,ms} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+SF8 is the default: 2.5\,dB more link budget than SF7 for improved resilience, at $\approx$2$\times$ airtime. Self-imposed duty cycle: $118\,\text{ms} / 300{,}000\,\text{ms} = \mathbf{0.039\%}$ --- well below Europe's 1\% rule.
+
+\subsection{Indian Regulatory Compliance}
+
+\begin{table}[h!]
+\centering
+\caption{WPC/DoT Regulatory Compliance (IN865 Band)}
+\begin{tabular}{L{4cm} L{5cm} L{5cm}}
+\toprule
+\textbf{Parameter} & \textbf{Requirement} & \textbf{This System} \\
+\midrule
+Frequency Band & 865--867\,MHz (WPC/DoT SRD) & 865.0625\,MHz --- Compliant \\
+Maximum EIRP & 1\,W (30\,dBm) & 22\,dBm (158\,mW) --- Compliant \\
+Duty Cycle & No mandatory limit (WPC) & Self-imposed 0.039\% --- Compliant \\
+Licence Requirement & None & None --- Compliant \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Range Estimation}
+
+\begin{table}[h!]
+\centering
+\caption{LoRa Range Estimates (865\,MHz, Friis + COST-231 Hata Model)}
+\begin{tabular}{L{5cm} C{3.5cm} C{3.5cm}}
+\toprule
+\textbf{Environment} & \textbf{SF7 Range} & \textbf{SF8 Range} \\
+\midrule
+Open terrain (LoS) & 2--5\,km & 5--10\,km \\
+Sub-urban (partial obstruction) & 1--3\,km & 2--4\,km \\
+Dense forest / urban canyon & 0.3--1\,km & 0.5--1.5\,km \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Solar Power --- Monsoon Realism}
+
+\begin{table}[h!]
+\centering
+\caption{Realistic 10\,W Solar Panel Daily Output in India}
+\begin{tabular}{L{6cm} C{5cm}}
+\toprule
+\textbf{Sky Condition} & \textbf{Daily Output (10\,W Panel)} \\
+\midrule
+Clear sky (summer) & 40--50\,Wh/day \\
+Light overcast & 20--35\,Wh/day \\
+Heavy monsoon cloud/rain & \textbf{5--10\,Wh/day} \\
+Extended storm (3+ days) & Near-zero \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Node daily consumption: $\approx$0.011\,Wh. Even at 5\,Wh/day monsoon output, the panel produces $>$450$\times$ the node's daily energy requirement.
+
+% ===================================================================
+\section{Web Interface Architecture}
+% ===================================================================
+
+The Master Node is a \textbf{stateless JSON REST API only}. It does not serve HTML/CSS/JS bundles. The ESP32-S3's lwIP stack is optimised for small frequent API requests, not multi-megabyte static assets.
+
+\subsection{API Endpoints}
+
+\begin{table}[h!]
+\centering
+\caption{REST API Endpoint Design}
+\begin{tabular}{L{5cm} C{1.5cm} L{7cm}}
+\toprule
+\textbf{Endpoint} & \textbf{Method} & \textbf{Description} \\
+\midrule
+\texttt{/api/nodes} & GET & All registered node IDs and last-seen timestamps \\
+\texttt{/api/nodes/\{id\}/telemetry} & GET & Latest sensor readings from node \texttt{\{id\}} \\
+\texttt{/api/kriging/heatmap} & GET & Kriging-interpolated weather grid as GeoJSON \\
+\texttt{/api/rpc/\{id\}} & POST & Inject an RPC command to node \texttt{\{id\}} in the mesh \\
+\texttt{/api/status} & GET & Master health: battery voltage, uptime, mesh node count \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Client PWA}
+
+React\,18 + Leaflet.js Progressive Web App; pre-built static bundle installed on the admin's device via Service Worker; Leaflet.heat plugin renders Kriging GeoJSON as colour gradient heatmap overlay; last-fetched data stored in IndexedDB for offline review.
+
+% ===================================================================
+\section{Development Work Pipeline}
+% ===================================================================
+
+\begin{longtable}{C{1cm} C{0.5cm} L{4cm} L{4cm} L{4.5cm}}
+\caption{Phased Development Pipeline} \\
+\toprule
+\textbf{Phase} & \textbf{\#} & \textbf{Task} & \textbf{Deliverable} & \textbf{Acceptance Criteria} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Phase} & \textbf{\#} & \textbf{Task} & \textbf{Deliverable} & \textbf{Acceptance Criteria} \\
+\midrule
+\endhead
+\midrule \multicolumn{5}{r}{\small\itshape (continued on next page)} \\ \endfoot
+\bottomrule
+\endlastfoot
+
+\multirow{4}{1cm}{\centering\textbf{0\\Procure}} &
+0.1 & Order all BOM components & Physical components on bench & All verified against BOM; DOA identified \\
+& 0.2 & Validate LiFePO4 + CN3722 charge curve & Oscilloscope profile at 1\,A & Terminates at 3.65\,V $\pm$50\,mV \\
+& 0.3 & Verify XC6220 under 300\,mA step-load & Bench PSU + multimeter log & 3.3\,V $\pm$50\,mV; no drop below 3.0\,V \\
+& 0.4 & Verify LM2596 output (21\,V in, 5.5\,V out) & Multimeter & Stable 5.5\,V $\pm$0.1\,V at 500\,mA \\
+\midrule
+
+\multirow{7}{1cm}{\centering\textbf{1\\PCB}} &
+1.1 & Slave PCB schematic (KiCad) & \texttt{.sch} file & ERC passes; zero errors \\
+& 1.2 & Slave PCB layout (2-layer, ENIG, Cu AS3935 shield) & \texttt{.kicad\_pcb} & DRC passes; Faraday pour around AS3935 \\
+& 1.3 & Master PCB (slave + DS3231 + MicroSD) & \texttt{.kicad\_pcb} & DRC passes; SD SPI traces length-matched \\
+& 1.4 & Fabricate PCBs (4$\times$ slave, 1$\times$ master) & Fabricated bare PCBs & Visual: no bridging, correct stack, ENIG \\
+& 1.5 & Assemble slave nodes (4$\times$) & 4$\times$ assembled boards & No cold joints; visual inspection pass \\
+& 1.6 & Assemble master node (1$\times$) & 1$\times$ assembled board & Same + DS3231 and MicroSD slot verified \\
+& 1.7 & 3D-print anemometer, vane, brackets (PETG/ASA) & Printed parts & Fit verified; no warping; UV-coat applied \\
+\midrule
+
+\multirow{9}{1cm}{\centering\textbf{2\\Firmware}} &
+2.1 & I2C HAL: BME680, AS5600, LTR390-UV, SHT20 drivers & \texttt{hal\_i2c.cpp} & Valid readings on serial monitor \\
+& 2.2 & UART HAL: NEO-6M, PMS5003 & \texttt{hal\_uart.cpp} & GPS fix $<$60\,s; PM2.5 valid after 500\,ms \\
+& 2.3 & GPIO/PCNT: Anemometer, Pluviometer, AS3935, LM393 & \texttt{hal\_gpio.cpp} & Pulse counter correct; interrupt on bucket tip \\
+& 2.4 & ADC HAL: BPW34/LM358 radiation & \texttt{hal\_adc.cpp} & Stable baseline; spike detectable \\
+& 2.5 & MOSFET power gating + stabilisation delays & \texttt{power\_gate.cpp} & No I2C bus lockup after gate cycle \\
+& 2.6 & Preprocessing pipeline (Min-Max, deltas) & \texttt{preprocess.cpp} & Tensor in [0.0, 1.0]; deltas correct \\
+& 2.7 & XGBoost training data collection (2+ weeks) & \texttt{training\_data.csv} & $\ge$500 labelled samples; 5 anomaly classes \\
+& 2.8 & Train, validate, tune XGBoost model & \texttt{model\_final.ubj} & F1 $\ge$0.88; confusion matrix approved \\
+& 2.9 & Port XGBoost to C++ embedded inference & \texttt{tinyml.cpp} & Output matches Python reference on same inputs \\
+\midrule
+
+\multirow{5}{1cm}{\centering\textbf{2\\(cont.)}} &
+2.10 & AES-128-CCM encrypt/decrypt + nonce manager & \texttt{crypto.cpp} & Roundtrip pass; nonce survives sleep; NVS backup \\
+& 2.11 & AODV routing (RREQ/RREP/RERR, route cache) & \texttt{aodv.cpp} & Route in $\le$3 hops; RERR re-discovers \\
+& 2.12 & Synchronized polling window (RTC + LoRa RX) & \texttt{poll\_mgr.cpp} & RX only within 2\,s window; responds to poll \\
+& 2.13 & Full sequential pipeline + deep sleep integration & \texttt{main.cpp} & Cycle $<$200\,ms; sleep $<$100\,$\mu$A \\
+& 2.14 & Challenge-response new-node handshake & \texttt{handshake.cpp} & New node joins; nonce sync; no replay \\
+\midrule
+
+\multirow{4}{1cm}{\centering\textbf{3\\Master}} &
+3.1 & Spatial Kriging engine (variogram + Gauss elim.) & \texttt{kriging.cpp} & Output matches Python pykrige on 10-node grid \\
+& 3.2 & Master polling scheduler (DS3231 + RPC broadcast) & \texttt{scheduler.cpp} & All nodes polled; responses logged to SD \\
+& 3.3 & JSON REST API (5 endpoints, lwIP HTTP) & \texttt{api.cpp} & All endpoints correct; 10\,req/s stress test \\
+& 3.4 & Node registry + MicroSD database writer & \texttt{registry.cpp} & Telemetry persisted; recoverable after reboot \\
+\midrule
+
+\multirow{3}{1cm}{\centering\textbf{4\\Web}} &
+4.1 & React + Leaflet PWA frontend & \texttt{build/} dist & Heatmap renders from live GeoJSON \\
+& 4.2 & RPC injection UI (node click $\rightarrow$ POST) & RPC panel & All 8 commands injectable; response shown \\
+& 4.3 & Service Worker offline packaging & \texttt{sw.js} & Installs on Chrome/Safari; offline data viewable \\
+\midrule
+
+\multirow{5}{1cm}{\centering\textbf{5\\Integrate}} &
+5.1 & Bench test: 4 slaves + 1 master, all firmware & Integration log & All nodes in /api/nodes; all readings valid \\
+& 5.2 & AODV multi-hop relay test (D$\to$B$\to$A$\to$Master) & Packet trace & 3-hop delivery; re-routes on manual node kill \\
+& 5.3 & Power budget validation ($\mu$A logger) & Current log & Sleep $<$100\,$\mu$A; active $<$200\,ms \\
+& 5.4 & RF range test (RSSI at 1\,km and 2\,km) & RSSI/distance map & Link OK at 2\,km SF8; SF9 at 4\,km \\
+& 5.5 & Security: MIC rejection + nonce replay test & Test report & Corrupted MIC rejected; replay rejected \\
+\midrule
+
+\multirow{5}{1cm}{\centering\textbf{6\\Deploy}} &
+6.1 & Weatherproof assembly; seal enclosures & 5$\times$ field units & IP67 submersion test (30\,min, 0.5\,m) passed \\
+& 6.2 & Mount anemometers and vanes; calibrate & Assembled stations & Full 0--360\textdegree\ AS5600 reading; cups spin \\
+& 6.3 & Deploy and geo-register nodes & GPS coordinates logged & NEO-6M fix $<$60\,s; in NVRAM; on PWA map \\
+& 6.4 & 72-hour field validation run & Field log + heatmap & Zero crashes; polling works; kriging generates \\
+& 6.5 & Final documentation + report & This document & All decisions documented; in version control \\
+\end{longtable}
+
+% ===================================================================
+\section{Known Limitations \& Open Engineering Items}
+% ===================================================================
+
+\begin{enumerate}[leftmargin=*, label=\textbf{\arabic*.}]
+    \item \textbf{BPW34 Radiation Calibration.} The BPW34 silicon PIN photodiode is an uncalibrated relative counter. While the predictive model filters statistical noise and compensates for radon washout, it cannot serve as a certified dosimeter without individual chamber calibration against a known reference source (e.g., Cesium-137).
+    
+    \item \textbf{LM2596 Pre-regulator.} Required between solar panel Vmpp ($\approx$17.5\,V) and CN3722 (max 6\,V input). Now explicitly included in BOM.
+    
+    \item \textbf{SHT20 Interface Clarification.} The SHT20 chip is natively I2C. RS-485 is a module-level wrapper. Direct I2C connection is used here. They are not interchangeable.
+    
+    \item \textbf{AS3935 False-Positive Rate.} Even with a Faraday shield, the \texttt{AFE\_GB} gain register and indoor/outdoor mode bit must be calibrated per deployment environment.
+    
+    \item \textbf{AODV on LoRa --- No Reference Implementation.} A production-quality AODV stack for ESP32+LoRa must be developed from scratch. Existing open-source stacks (RadioHead, LoRaMesher) implement flooding or basic DV --- not AODV. This is the highest firmware complexity item.
+    
+    \item \textbf{XGBoost Cold-Start Problem.} The model requires 2+ weeks of labelled training data. Until training data exists, use a conservative rule-based threshold (e.g.\ temperature delta $>$5\,\textdegree C/min\,$=$\,anomaly) as a placeholder.
+    
+    \item \textbf{DS3231 Counterfeit Risk.} Genuine DS3231 modules achieve $\pm$2\,ppm ($\approx$63\,ms/day drift). Counterfeits drift 50--100$\times$ faster. Verify authenticity before deployment.
+    
+    \item \textbf{DS3231 Polling Window Drift.} At $\pm$2\,ppm over 24\,h: cumulative drift $\approx$$\pm$170\,ms --- within the 2\,s window. An hourly Master beacon re-synchronisation pulse is recommended for long-term reliability.
+    
+    \item \textbf{BPW34 Radiation Detector.} Valid research technique but \textit{not a calibrated instrument}. Not suitable for medical or regulatory compliance measurements. Suitable for environmental anomaly detection only.
+\end{enumerate}
+
+% ===================================================================
+% BIBLIOGRAPHY / REFERENCES
+% ===================================================================
+\newpage
+\section*{Key References \& Standards}
+\addcontentsline{toc}{section}{Key References \& Standards}
+
+\begin{itemize}[leftmargin=*]
+    \item IETF RFC 3561 --- \textit{Ad hoc On-Demand Distance Vector (AODV) Routing}. C.\ Perkins et al., 2003.
+    \item IETF RFC 3610 --- \textit{Counter with CBC-MAC (CCM)}. D.\ Whiting et al., 2003.
+    \item NIST SP 800-38C --- \textit{Recommendation for Block Cipher Modes: CCM Mode}. NIST, 2004.
+    \item LoRa Alliance --- \textit{LoRaWAN Regional Parameters v1.0.3}, IN865-867 Band Plan.
+    \item Semtech --- \textit{SX1262 Datasheet Rev 2.1}, \textit{LoRa Modulation Basics AN1200.22}.
+    \item Espressif --- \textit{ESP32-S3 Technical Reference Manual v1.5}; \textit{ESP32-S3 Datasheet v1.9}.
+    \item Torex Semiconductor --- \textit{XC6220 Series Datasheet}. 
+    \item Consonance Semiconductor --- \textit{CN3722 Datasheet}.
+    \item Matheron, G.\ (1963). \textit{Principles of Geostatistics}. Economic Geology, 58(8), 1246--1266.
+    \item Boser et al.\ / Chen \& Guestrin (2016). \textit{XGBoost: A Scalable Tree Boosting System}. KDD~2016.
+\end{itemize}
+
+\end{document}

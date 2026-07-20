@@ -29,7 +29,7 @@ With the introduction of the Master Node overlay, the standard sensor nodes in t
 *   **INMP441 (I2S):** MEMS Digital Microphone for Acoustic AI (thunder, rain intensity, chainsaw detection).
 *   **PMS5003 (UART):** Particulate Matter laser scatter sensor for PM2.5/PM10 (wildfire smoke, smog). Heavily power-gated via MOSFET.
 *   **AS5600 (I2C):** Magnetic rotary encoder attached to a wind vane for Absolute Wind Direction.
-*   **VEML7700 (I2C):** High-precision Ambient Light / UV sensor for calculating Solar Irradiance and cloud density.
+*   **LTR390-UV (I2C):** Digital UV and Ambient Light sensor replacing obsolete/unavailable sensors for solar irradiance and UV index.
 *   **SHT20 (I2C via RS485):** Waterproof soil moisture and temperature probe.
 
 ## 2. Slave-to-Slave Mesh Instruction Set
