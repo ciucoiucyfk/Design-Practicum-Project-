@@ -197,6 +197,11 @@ Each node (both Master and Slave) contains the exact same micro-climate sensor a
 *   **Anemometer (Protocol: GPIO / PCNT):** Measures wind speed. Uses 3D-printed wind cups spinning a magnet over a Hall-Effect sensor or Rotary Encoder. This sends high-speed digital pulses to the ESP32's Pulse Counter (PCNT) hardware peripheral.
 *   **Pluviometer (Protocol: GPIO Interrupt):** Measures rain. A 3D-printed tipping bucket triggers a magnetic reed switch. The ESP32 reads this as a hardware interrupt (falling edge).
 *   **PIN Diode - BPW34 (Protocol: Analog / ADC):** Detects Beta/Gamma radiation. The tiny current from a particle strike is amplified by an LM358 Op-Amp into a voltage spike, which the ESP32 reads via an Analog-to-Digital (ADC) pin.
+*   **INMP441 (Protocol: I2S):** MEMS digital microphone for Acoustic AI. The TinyML engine listens to the audio spectrum to classify thunder, rain intensity, or chainsaws (illegal logging).
+*   **PMS5003 (Protocol: UART):** Laser-scattering Particulate Matter sensor. Accurately maps PM2.5/PM10 for wildfire smoke and smog. Heavily power-gated via MOSFET due to its internal fan.
+*   **AS5600 (Protocol: I2C):** Contactless magnetic rotary encoder attached to a wind vane. Provides Absolute Wind Direction without physical friction.
+*   **VEML7700 (Protocol: I2C):** High-precision Ambient Light and UV Index sensor to measure solar irradiance and cloud density.
+*   **SHT20 (Protocol: I2C via RS485):** Waterproof soil moisture and temperature probe for agricultural/drought mapping.
 
 ---
 
@@ -218,13 +223,18 @@ Each node (both Master and Slave) contains the exact same micro-climate sensor a
 | | NEO-6M GPS (UART) | ₹ 450 | [Robu.in](https://robu.in/product/ublox-neo-6m-gps-module/) |
 | | PIN Diode (BPW34) + LM358 OpAmp | ₹ 150 | [Robu.in](https://robu.in/product/bpw34-silicon-pin-photodiode/) |
 | | Anemometer & Pluviometer (Bearings/Reed) | ₹ 600 | [Local Hardware](#) |
+| | INMP441 MEMS Microphone (I2S) | ₹ 200 | [Robu.in](https://robu.in/product/inmp441-omnidirectional-microphone-module/) |
+| | PMS5003 PM2.5/PM10 Sensor (UART) | ₹ 1,200 | [Robu.in](https://robu.in/product/pms5003-digital-universal-particle-concentration-sensor/) |
+| | AS5600 Magnetic Encoder (Wind Direction) | ₹ 250 | [Robu.in](https://robu.in/product/as5600-magnetic-encoder-module/) |
+| | VEML7700 Ambient Light Sensor (I2C) | ₹ 250 | [Robu.in](https://robu.in/product/veml7700-ambient-light-sensor-module/) |
+| | SHT20 Waterproof Soil Probe | ₹ 400 | [Robu.in](https://robu.in/product/sht20-temperature-humidity-sensor-probe/) |
 | **Physical Build** | IP67 ABS Enclosure + Gore-Tex Vents | ₹ 800 | [Robu.in](https://robu.in/product/waterproof-plastic-electronic-project-box-enclosure/) |
 | | ASA/PETG Filament (UV/Temp Resistant) | ₹ 250 | [Robu.in](https://robu.in/product/flashforge-petg-1-75mm-3d-printer-filament-1kg-black/) |
 | | M3/M2.5 SS Screws & Brass Inserts | ₹ 150 | [Local Hardware](#) |
 | | 22/26 AWG Silicone Wire + JST-XH/XT60 Connectors | ₹ 300 | [Robu.in](https://robu.in/product/jst-xh-2-54mm-pitch-connector-kit/) |
 | | IPEX/U.FL to SMA Bulkhead Pigtail | ₹ 150 | [Robu.in](https://robu.in/product/ipex-to-sma-female-bulkhead-cable/) |
 | | Silicone Sealant & Desiccant Packets | ₹ 100 | [Local Hardware](#) |
-| **Total** | **Estimated Slave Node Cost** | **₹ 9,550** | |
+| **Total** | **Estimated Slave Node Cost** | **₹ 11,850** | |
 
 ### B. Master Node BOM (Web Gateway + Full Sensor Array)
 *The Master Node possesses the exact same micro-climate weather sensing capabilities as the Slave Nodes, but is upgraded with additional compute, high-gain RF, and storage.*
@@ -242,6 +252,11 @@ Each node (both Master and Slave) contains the exact same micro-climate sensor a
 | | NEO-6M GPS (UART) | ₹ 450 | [Robu.in](https://robu.in/product/ublox-neo-6m-gps-module/) |
 | | PIN Diode (BPW34) + LM358 OpAmp | ₹ 150 | [Robu.in](https://robu.in/product/bpw34-silicon-pin-photodiode/) |
 | | Anemometer & Pluviometer (Bearings/Reed) | ₹ 600 | [Local Hardware](#) |
+| | INMP441 MEMS Microphone (I2S) | ₹ 200 | [Robu.in](https://robu.in/product/inmp441-omnidirectional-microphone-module/) |
+| | PMS5003 PM2.5/PM10 Sensor (UART) | ₹ 1,200 | [Robu.in](https://robu.in/product/pms5003-digital-universal-particle-concentration-sensor/) |
+| | AS5600 Magnetic Encoder (Wind Direction) | ₹ 250 | [Robu.in](https://robu.in/product/as5600-magnetic-encoder-module/) |
+| | VEML7700 Ambient Light Sensor (I2C) | ₹ 250 | [Robu.in](https://robu.in/product/veml7700-ambient-light-sensor-module/) |
+| | SHT20 Waterproof Soil Probe | ₹ 400 | [Robu.in](https://robu.in/product/sht20-temperature-humidity-sensor-probe/) |
 | **Storage/Timing** | MicroSD Card Module (SDIO) + 32GB SD | ₹ 500 | [Robu.in](https://robu.in/product/micro-sd-tf-card-memory-shield-module-spi/) |
 | | DS3231 Precision RTC (I2C) + CR2032 | ₹ 150 | [Robu.in](https://robu.in/product/ds3231-rtc-module/) |
 | **Physical Build** | IP67 ABS/Metal Enclosure + Vents | ₹ 800 | [Robu.in](https://robu.in/product/waterproof-plastic-electronic-project-box-enclosure/) |
@@ -250,7 +265,7 @@ Each node (both Master and Slave) contains the exact same micro-climate sensor a
 | | 22/26 AWG Silicone Wire + JST-XH/XT60 Connectors | ₹ 300 | [Robu.in](https://robu.in/product/jst-xh-2-54mm-pitch-connector-kit/) |
 | | IPEX/U.FL to SMA Bulkhead Pigtail | ₹ 150 | [Robu.in](https://robu.in/product/ipex-to-sma-female-bulkhead-cable/) |
 | | Silicone Sealant & Desiccant Packets | ₹ 100 | [Local Hardware](#) |
-| **Total** | **Estimated Master Node Cost** | **₹ 10,850** | |
+| **Total** | **Estimated Master Node Cost** | **₹ 13,150** | |
 
 ---
 

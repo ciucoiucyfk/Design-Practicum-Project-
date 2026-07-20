@@ -14,47 +14,75 @@ With the introduction of the Master Node overlay, the standard sensor nodes in t
 
 **Power Subsystem (100% Autonomous):**
 *   **Solar Panel:** 10W Monocrystalline (12V or 6V depending on MPPT).
-*   **Charge Controller:** MPPT IC (e.g., Consonance CN3791 for 6V panels, or TI BQ24650).
-*   **Battery Array:** 10,000mAh Lithium-Ion (18650 array) or LiFePO4 pack.
-*   **Voltage Regulation:** Ultra-low Quiescent Current (Iq) LDO (e.g., HT7333) or high-efficiency Buck-Boost (e.g., TPS63020) for 3.3V stable output.
-*   **Power Switching:** Logic-Level N-Channel MOSFETs (e.g., IRLML2502) to physically cut power to GPS/Sensors during deep sleep.
-*   **Battery Monitoring:** 100kΩ/100kΩ resistor divider bridged to an ADC pin.
+*   **Charge Controller:** MPPT IC (e.g., Consonance CN3791 for 6V panels).
+*   **Battery Array:** 10,000mAh Lithium-Ion (18650 array).
+*   **Voltage Regulation:** Ultra-low Quiescent Current (Iq) LDO (e.g., HT7333).
+*   **Power Switching:** Logic-Level N-Channel MOSFETs (e.g., IRLML2502) to physically cut power to power-hungry sensors during deep sleep.
 
-**Environmental Sensor Array:**
-*   **BME680 (I2C):** Micro-heated MEMS for Temperature, Humidity, Barometric Pressure, and VOC (Air Quality).
-*   **AS3935 (I2C/SPI):** Lightning sensor IC + customized MA5532 antenna coil (detects strikes up to 40km).
-*   **NEO-6M GPS (UART):** Standard GPS module with active ceramic antenna (used only rarely for location fixes).
-*   **Anemometer (Wind Speed):** 3D-printed wind cups + High-resolution Optical/Magnetic Rotary Encoder (GPIO Interrupt/PCNT).
-*   **Pluviometer (Rain Gauge):** DIY Tipping Bucket + Reed Switch + Hardware RC Debounce circuit (10kΩ resistor, 100nF ceramic capacitor).
-*   **Radiation Detector:** Solid-state PIN Diode array (e.g., BPW34) + Peak detector/Amplifier circuit (e.g., LM358 Op-Amp) for Beta/Gamma detection.
+**Extended Micro-Climate Sensor Array:**
+*   **BME680 (I2C):** Temperature, Humidity, Barometric Pressure, and VOCs.
+*   **AS3935 (I2C/SPI):** Lightning sensor IC + MA5532 antenna coil (detects strikes up to 40km).
+*   **NEO-6M GPS (UART):** GPS module (power-gated via MOSFET, used only for initial sync).
+*   **Anemometer (GPIO Interrupt):** Wind speed pulse counter.
+*   **Pluviometer (GPIO Interrupt):** Rain gauge tipping bucket.
+*   **PIN Diode Array (ADC):** Beta/Gamma radiation detection via BPW34 + LM358 Op-Amp.
+*   **INMP441 (I2S):** MEMS Digital Microphone for Acoustic AI (thunder, rain intensity, chainsaw detection).
+*   **PMS5003 (UART):** Particulate Matter laser scatter sensor for PM2.5/PM10 (wildfire smoke, smog). Heavily power-gated via MOSFET.
+*   **AS5600 (I2C):** Magnetic rotary encoder attached to a wind vane for Absolute Wind Direction.
+*   **VEML7700 (I2C):** High-precision Ambient Light / UV sensor for calculating Solar Irradiance and cloud density.
+*   **SHT20 (I2C via RS485):** Waterproof soil moisture and temperature probe.
 
-**Enclosure & Passives:**
-*   IP67/IP68 Weatherproof ABS/Polycarbonate Enclosure.
-*   Gore-Tex or PTFE vents (to allow ambient air pressure/humidity to reach the BME680 while blocking liquid water).
-*   I2C Pull-up Resistors (4.7kΩ).
+## 2. Slave-to-Slave Mesh Instruction Set
+Slave Nodes must autonomously manage the mesh without the Master. To do this, they exchange heavily formatted structs under the **SPIN (Sensor Protocols for Information via Negotiation)** routing rules.
 
-## 2. The RPC Listener (Command Execution)
-Unlike the Master Node which injects commands, the Slave Node runs a persistent **Remote Procedure Call (RPC) Listener Task** on Core 0.
-*   When a LoRa packet arrives addressed to this specific Slave Node (or a broadcast to all nodes), Layer 5 hands the payload to the RPC Listener.
-*   The Listener decrypts the payload (AES-128-CTR) and verifies the HMAC. 
-*   If valid, the Slave executes the instruction set command. 
-    *   *Data Polling Request:* If the Master requests current sensor data, the Slave immediately wakes Core 1, pulls the latest 1D Tensor from Layer 2, encrypts it, and transmits it back to the Master.
-    *   *Parameter Update:* If the Master sends a new Sleep Interval (e.g., `[CMD: SET_SLEEP, VAL: 300s]`), the Slave updates its Non-Volatile Storage (NVS) and alters its RTOS timer instantly.
+### Allowed Slave-to-Slave Transmissions
+1.  **HELLO Beacons:** Sent every few hours to maintain the Distance-Vector routing table and synchronize cryptographic nonces.
+2.  **SPIN_ADV (Advertisement):** When a Slave's TinyML model detects an anomaly (e.g., a flash flood), it does *not* broadcast the heavy data immediately. It broadcasts a 3-byte ADV packet saying "I have new anomaly data."
+3.  **SPIN_REQ (Request):** If a neighboring Slave has not seen this anomaly yet, it replies with a REQ packet.
+4.  **SPIN_DATA (Data Payload):** The original Slave finally sends the encrypted anomaly payload.
+5.  **MESH_WARNING:** A specific peer-to-peer warning instructing a neighboring node to wake up and increase its polling rate because a severe storm is approaching from its vector.
 
-## 3. Autonomous Fallback (Survival Mode)
-Because the network is a Hybrid Mesh, the Slave Nodes do not become useless if the Master Node goes offline.
-*   **Connection Loss:** If a Slave Node fails to receive a `HELLO` beacon or a polling request from the Master Node for 24 hours, it enters Autonomous Mode.
-*   **Fallback Behavior:** The Slave continues to route packets for its peers. It relies purely on the Exception-Based Broadcasting (SPIN protocol) outlined in `communications.md`. It will locally trigger alerts if its TinyML model detects a severe weather anomaly, allowing adjacent Slave Nodes to act on that localized warning even if the global Base Station is disconnected.
+### Slave-to-Slave Packet Formatting
+```cpp
+// Peer-to-Peer Message Types
+enum MeshCommand {
+    P2P_HELLO         = 0x10, // DV Routing update
+    P2P_SPIN_ADV      = 0x11, // I have new anomaly data
+    P2P_SPIN_REQ      = 0x12, // Please send me that anomaly data
+    P2P_SPIN_DATA     = 0x13, // Here is the encrypted anomaly data
+    P2P_MESH_WARNING  = 0x14  // High alert: Storm approaching from my vector
+};
 
-## 4. Slave Node Instruction Set Structure
+// Standard P2P Header (Unencrypted for fast routing)
+struct P2P_Header {
+    uint8_t sender_mac[6];
+    uint8_t msg_type; // Maps to MeshCommand enum
+    uint8_t hop_metric;
+};
+```
+*How they do it:* The SPIN protocol strictly prevents the "broadcast storm" problem. A node *only* transmits data if a neighbor explicitly requests it via `P2P_SPIN_REQ`.
+
+## 3. The Master RPC Listener (Command Execution)
+Unlike Peer-to-Peer instructions, the Slave Node runs a persistent **Remote Procedure Call (RPC) Listener Task** for Master Node commands.
+*   When a LoRa packet arrives addressed to this Slave (or a global broadcast), the Slave decrypts the payload (AES-128-CTR). 
+*   If valid, the Slave executes the instruction:
+    *   *Data Polling:* The Master requests data (`CMD_SEND_TELEMETRY`); the Slave wakes, pulls the 1D Tensor, encrypts it, and replies.
+    *   *Parameter Update:* The Master sends `CMD_SET_SLEEP_MS`; the Slave updates Non-Volatile Storage (NVS) and alters its RTOS timer instantly.
+
+## 4. Master-to-Slave Instruction Set Structure
 Every Slave Node possesses a predefined C-Struct dictionary of acceptable commands it will obey from the Master Node:
 ```cpp
 enum RpcCommand {
     CMD_FORCE_INFERENCE   = 0x01, // Wake up and run XGBoost model now
-    CMD_SEND_TELEMETRY    = 0x02, // Send raw temp/hum/press/wind
+    CMD_SEND_TELEMETRY    = 0x02, // Send raw telemetry to Master
     CMD_UPDATE_THRESH     = 0x03, // Change ML anomaly threshold (0.0 to 1.0)
     CMD_SET_SLEEP_MS      = 0x04, // Change deep sleep duration
-    CMD_DISABLE_PERIPH    = 0x05, // Cut MOSFET power to a broken sensor
+    CMD_DISABLE_PERIPH    = 0x05, // Cut MOSFET power to a broken sensor (e.g., PM2.5 fan broken)
     CMD_REBOOT            = 0x06  // Trigger ESP.restart()
 };
 ```
+
+## 5. Autonomous Fallback (Survival Mode)
+Because the network is a Hybrid Mesh, the Slave Nodes do not become useless if the Master Node goes offline.
+*   **Connection Loss:** If a Slave Node fails to receive a Master Node poll for 24 hours, it enters Autonomous Mode.
+*   **Fallback Behavior:** The Slave continues to route packets via P2P. It relies purely on the `MeshCommand` instructions to keep neighbors updated on severe weather, allowing the macro-region to react to storms even if the global Base Station is physically destroyed.
