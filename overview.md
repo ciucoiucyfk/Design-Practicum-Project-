@@ -156,6 +156,14 @@ stateDiagram-v2
     LoRa_TX --> DeepSleep : Wait for ACK
 ```
 
+### Power State Flow Explanation:
+This state machine proves how the nodes survive indefinitely on a tiny 10W solar budget by remaining silent unless absolutely necessary.
+1.  **Default State (Deep Sleep):** The ESP32's dual cores are entirely powered off. The Ultra-Low Power (ULP) coprocessor manages timers. Power-hungry sensors (like the PMS5003 PM2.5 fan) are physically disconnected from the battery by N-Channel MOSFETs. Total current draw is <10µA.
+2.  **Wake Triggers:** There are two ways to exit Deep Sleep. The first is a routine internal RTC timer (e.g., every 5 minutes). The second is an asynchronous hardware interrupt from a sensor that stays on at nano-amp levels (e.g., the rain gauge tips, or the AS3935 detects a lightning EMP).
+3.  **Active Compute (Polling & Inference):** Once awake, the ESP32 switches on the MOSFETs, powers the sensors, reads the bus, and generates the 1D Tensor. It runs the TinyML inference locally. This entire process takes roughly ~500 milliseconds.
+4.  **The AI Gate (Check_Threshold):** This is the critical bandwidth and power saving step. If the XGBoost model outputs an Index of 0 (Normal Weather), the node *aborts transmission* and instantly goes back to Deep Sleep. 
+5.  **Exception Transmission:** Only if the Index > 0 (Anomaly Detected) will the node proceed to Cryptography and LoRa TX. It encrypts the payload, transmits it, waits briefly for a P2P ACK from a neighbor, and immediately sleeps. By gating the LoRa radio behind the AI threshold, we save 99% of our battery capacity.
+
 ---
 
 ## 5. Security, Cryptography & Node Integration
